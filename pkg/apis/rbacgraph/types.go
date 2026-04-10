@@ -293,7 +293,10 @@ func (s *RoleGraphReviewSpec) EnsureDefaults() {
 	if s.MatchMode == "" {
 		s.MatchMode = MatchModeAny
 	}
-	if s.WildcardMode == "" {
+	switch s.WildcardMode {
+	case "":
+		s.WildcardMode = WildcardModeWildcard
+	case "expand":
 		s.WildcardMode = WildcardModeWildcard
 	}
 	if s.PodPhaseMode == "" {
