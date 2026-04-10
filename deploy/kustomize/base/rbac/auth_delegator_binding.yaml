@@ -2,7 +2,7 @@
 #
 # The aggregated apiserver delegates *authentication* and *authorization*
 # decisions to the kube-apiserver: when a client calls
-# /apis/rbacgraph.incloud.io/..., kube-apiserver proxies the request to
+# /apis/rbacgraph.in-cloud.io/..., kube-apiserver proxies the request to
 # our pod, and we ask kube-apiserver "is this client allowed to do this?"
 # via TokenReview / SubjectAccessReview. system:auth-delegator grants
 # exactly those permissions.

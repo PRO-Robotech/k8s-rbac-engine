@@ -3,5 +3,5 @@
 // +k8s:deepcopy-gen=package
 // +k8s:conversion-gen=k8s-rbac-engine/pkg/apis/rbacgraph
 // +k8s:openapi-gen=true
-// +groupName=rbacgraph.incloud.io
+// +groupName=rbacgraph.in-cloud.io
 package v1alpha1

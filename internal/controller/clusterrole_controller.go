@@ -24,7 +24,7 @@ type ClusterRoleReconciler struct {
 }
 
 // +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=clusterroles,verbs=get;list;watch
-// +kubebuilder:rbac:groups=rbacreports.incloud.io,resources=clusterrbacreports,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=rbacreports.in-cloud.io,resources=clusterrbacreports,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile implements reconcile.Reconciler.
 func (r *ClusterRoleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {

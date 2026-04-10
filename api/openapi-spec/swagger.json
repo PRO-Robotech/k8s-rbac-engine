@@ -10,7 +10,7 @@
     "version": "v1alpha1"
   },
   "paths": {
-    "/apis/rbacgraph.incloud.io/v1alpha1/rolegraphreviews": {
+    "/apis/rbacgraph.in-cloud.io/v1alpha1/rolegraphreviews": {
       "post": {
         "description": "Query the RBAC role graph. Submit a RoleGraphReview with a selector to discover matching roles, bindings, subjects, and optionally pods/workloads.",
         "consumes": [
@@ -47,7 +47,7 @@
           "minimal-query": {
             "summary": "Find all roles granting access to secrets",
             "value": {
-              "apiVersion": "rbacgraph.incloud.io/v1alpha1",
+              "apiVersion": "rbacgraph.in-cloud.io/v1alpha1",
               "kind": "RoleGraphReview",
               "spec": {
                 "selector": {

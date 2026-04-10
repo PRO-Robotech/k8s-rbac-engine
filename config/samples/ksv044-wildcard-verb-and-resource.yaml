@@ -1,4 +1,4 @@
-apiVersion: rbacreports.incloud.io/v1alpha1
+apiVersion: rbacreports.in-cloud.io/v1alpha1
 kind: RbacPolicy
 metadata:
   name: ksv044-wildcard-verb-and-resource

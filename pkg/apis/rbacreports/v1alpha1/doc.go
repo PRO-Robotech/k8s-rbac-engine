@@ -1,4 +1,4 @@
-// Package v1alpha1 contains the API types for the rbacreports.incloud.io API
+// Package v1alpha1 contains the API types for the rbacreports.in-cloud.io API
 // group: RbacPolicy, RbacReport, and ClusterRbacReport.
 //
 // DeepCopy methods in zz_generated.deepcopy.go are produced by
@@ -8,5 +8,5 @@
 // +kubebuilder:validation markers in the same file.
 
 // +kubebuilder:object:generate=true
-// +groupName=rbacreports.incloud.io
+// +groupName=rbacreports.in-cloud.io
 package v1alpha1

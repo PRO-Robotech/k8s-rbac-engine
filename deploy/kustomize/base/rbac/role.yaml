@@ -45,7 +45,7 @@ rules:
   - list
   - watch
 - apiGroups:
-  - rbacreports.incloud.io
+  - rbacreports.in-cloud.io
   resources:
   - clusterrbacreports
   - rbacreports
@@ -58,7 +58,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - rbacreports.incloud.io
+  - rbacreports.in-cloud.io
   resources:
   - rbacpolicies
   verbs:

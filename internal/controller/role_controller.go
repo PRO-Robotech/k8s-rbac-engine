@@ -24,8 +24,8 @@ type RoleReconciler struct {
 }
 
 // +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=roles,verbs=get;list;watch
-// +kubebuilder:rbac:groups=rbacreports.incloud.io,resources=rbacpolicies,verbs=get;list;watch
-// +kubebuilder:rbac:groups=rbacreports.incloud.io,resources=rbacreports,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=rbacreports.in-cloud.io,resources=rbacpolicies,verbs=get;list;watch
+// +kubebuilder:rbac:groups=rbacreports.in-cloud.io,resources=rbacreports,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile implements reconcile.Reconciler.
 func (r *RoleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {

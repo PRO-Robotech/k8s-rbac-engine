@@ -73,7 +73,7 @@ func NewServerOptions(out, errOut io.Writer) *ServerOptions {
 		RecommendedOptions: serveroptions.NewRecommendedOptions(
 			"",
 			internalserver.Codecs.LegacyCodec(schema.GroupVersion{
-				Group:   "rbacgraph.incloud.io",
+				Group:   "rbacgraph.in-cloud.io",
 				Version: "v1alpha1",
 			}),
 		),
@@ -115,7 +115,7 @@ func NewCommandStartServer(ctx context.Context, defaults *ServerOptions) *cobra.
 		"Subsystems to run: all (apiserver + reconcilers), graph (apiserver only), reports (reconcilers only)")
 	flags.BoolVar(&o.EnableReportEnrichment, "enable-report-enrichment", true,
 		"Enrich graph and per-role responses with severity from RbacReport / ClusterRbacReport CRDs. "+
-			"Auto-detected via discovery: if rbacreports.incloud.io CRDs are not installed in the cluster, "+
+			"Auto-detected via discovery: if rbacreports.in-cloud.io CRDs are not installed in the cluster, "+
 			"the apiserver still starts but the Assessment field is omitted from responses. "+
 			"Set to false to skip enrichment unconditionally.")
 
@@ -293,7 +293,7 @@ func (o *ServerOptions) buildReportLookup() (engine.ReportLookup, func(context.C
 	cache, err := reportcache.New(cfg, scheme)
 	switch {
 	case err == nil:
-		klog.Info("rbacreports.incloud.io CRDs found; graph enrichment ENABLED")
+		klog.Info("rbacreports.in-cloud.io CRDs found; graph enrichment ENABLED")
 
 		return cache, func(ctx context.Context) error {
 			if err := cache.Run(ctx); err != nil && !errors.Is(err, context.Canceled) {
@@ -304,7 +304,7 @@ func (o *ServerOptions) buildReportLookup() (engine.ReportLookup, func(context.C
 		}, nil
 
 	case errors.Is(err, reportcache.ErrCRDNotInstalled):
-		klog.Warningf("rbacreports.incloud.io CRDs not installed; graph enrichment DISABLED — install dist/install.yaml or run --mode=all to create the CRDs")
+		klog.Warningf("rbacreports.in-cloud.io CRDs not installed; graph enrichment DISABLED — install dist/install.yaml or run --mode=all to create the CRDs")
 
 		return nil, nil, nil
 	default:

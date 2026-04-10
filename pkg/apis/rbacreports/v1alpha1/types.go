@@ -1,4 +1,4 @@
-// Package v1alpha1 contains Go types for the rbacreports.incloud.io/v1alpha1 API
+// Package v1alpha1 contains Go types for the rbacreports.in-cloud.io/v1alpha1 API
 // group: RbacPolicy, RbacReport, and ClusterRbacReport.
 package v1alpha1
 

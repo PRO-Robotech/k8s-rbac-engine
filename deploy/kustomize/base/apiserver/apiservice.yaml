@@ -1,6 +1,6 @@
-# APIService registration for the rbacgraph.incloud.io aggregated API.
+# APIService registration for the rbacgraph.in-cloud.io aggregated API.
 #
-# When kube-apiserver receives a request for /apis/rbacgraph.incloud.io/...
+# When kube-apiserver receives a request for /apis/rbacgraph.in-cloud.io/...
 # it consults this object to find out where to proxy the request. The
 # spec.service block points at the rbac-engine Service in
 # rbac-engine-system, and kube-apiserver proxies the HTTPS call to its
@@ -18,12 +18,12 @@
 apiVersion: apiregistration.k8s.io/v1
 kind: APIService
 metadata:
-  name: v1alpha1.rbacgraph.incloud.io
+  name: v1alpha1.rbacgraph.in-cloud.io
   labels:
     app.kubernetes.io/name: rbac-engine
     app.kubernetes.io/component: aggregated-apiserver
 spec:
-  group: rbacgraph.incloud.io
+  group: rbacgraph.in-cloud.io
   version: v1alpha1
   groupPriorityMinimum: 100
   versionPriority: 100

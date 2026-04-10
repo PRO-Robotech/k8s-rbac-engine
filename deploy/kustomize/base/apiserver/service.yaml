@@ -1,6 +1,6 @@
 # Service that fronts the rbac-engine pod for the aggregated API surface.
 # kube-apiserver connects to this Service (via cluster DNS) when proxying
-# requests for the rbacgraph.incloud.io group, per the APIService
+# requests for the rbacgraph.in-cloud.io group, per the APIService
 # registration in apiservice.yaml.
 #
 # Port 443 (Service) → 6443 (container) is the convention for aggregated

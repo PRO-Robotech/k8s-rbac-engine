@@ -27,9 +27,9 @@ const (
 	LabelManagedByName = "rbac-reports-operator"
 )
 
-// API metadata for the rbacreports.incloud.io group.
+// API metadata for the rbacreports.in-cloud.io group.
 const (
-	APIVersion        = "rbacreports.incloud.io/v1alpha1"
+	APIVersion        = "rbacreports.in-cloud.io/v1alpha1"
 	KindRbacReport    = "RbacReport"
 	KindClusterReport = "ClusterRbacReport"
 

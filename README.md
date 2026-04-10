@@ -17,9 +17,9 @@ Single binary, two API groups, shared RBAC indexer.
 ```
 rbac-engine (--mode=all|graph|reports)
 ├── Indexer (informers) ─── shared RBAC snapshot
-│   ├── Aggregated API ─── rbacgraph.incloud.io/v1alpha1
+│   ├── Aggregated API ─── rbacgraph.in-cloud.io/v1alpha1
 │   │   └── POST rolegraphreviews (graph query + severity enrichment)
-│   └── Reconcilers ─── rbacreports.incloud.io/v1alpha1
+│   └── Reconcilers ─── rbacreports.in-cloud.io/v1alpha1
 │       ├── Role/ClusterRole changed → evaluate policies → RbacReport
 │       └── RbacPolicy changed → re-scan all roles
 ```
@@ -28,8 +28,8 @@ rbac-engine (--mode=all|graph|reports)
 
 | API Group | Mechanism | Resources |
 |-----------|-----------|-----------|
-| `rbacgraph.incloud.io/v1alpha1` | Aggregated API | `RoleGraphReview` |
-| `rbacreports.incloud.io/v1alpha1` | CRD | `RbacPolicy`, `RbacReport`, `ClusterRbacReport` |
+| `rbacgraph.in-cloud.io/v1alpha1` | Aggregated API | `RoleGraphReview` |
+| `rbacreports.in-cloud.io/v1alpha1` | CRD | `RbacPolicy`, `RbacReport`, `ClusterRbacReport` |
 
 ## Quick Start
 
@@ -79,8 +79,8 @@ rbac-engine --mode=reports
 
 ```bash
 # Graph API
-kubectl get apiservice v1alpha1.rbacgraph.incloud.io
-kubectl get --raw /apis/rbacgraph.incloud.io/v1alpha1
+kubectl get apiservice v1alpha1.rbacgraph.in-cloud.io
+kubectl get --raw /apis/rbacgraph.in-cloud.io/v1alpha1
 
 # Policy reports
 kubectl get rbacpolicies
@@ -91,9 +91,9 @@ kubectl get rbacreports -A
 ### Example: graph query
 
 ```bash
-cat <<'JSON' | kubectl create --raw /apis/rbacgraph.incloud.io/v1alpha1/rolegraphreviews -f -
+cat <<'JSON' | kubectl create --raw /apis/rbacgraph.in-cloud.io/v1alpha1/rolegraphreviews -f -
 {
-  "apiVersion": "rbacgraph.incloud.io/v1alpha1",
+  "apiVersion": "rbacgraph.in-cloud.io/v1alpha1",
   "kind": "RoleGraphReview",
   "metadata": {"name": "demo"},
   "spec": {
@@ -112,7 +112,7 @@ JSON
 ### Example: custom policy
 
 ```yaml
-apiVersion: rbacreports.incloud.io/v1alpha1
+apiVersion: rbacreports.in-cloud.io/v1alpha1
 kind: RbacPolicy
 metadata:
   name: no-secret-write

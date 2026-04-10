@@ -1,4 +1,4 @@
-// Package v1alpha1 — scheme registration for the rbacreports.incloud.io API group.
+// Package v1alpha1 — scheme registration for the rbacreports.in-cloud.io API group.
 //
 // This file mirrors the layout produced by `kubebuilder` so the standard
 // AddToScheme call works in cmd/rbac-engine main wiring and in tests via
@@ -13,7 +13,7 @@ import (
 )
 
 // GroupName is the API group for all rbacreports types.
-const GroupName = "rbacreports.incloud.io"
+const GroupName = "rbacreports.in-cloud.io"
 
 // GroupVersion is the GroupVersion used to register these objects.
 var GroupVersion = schema.GroupVersion{Group: GroupName, Version: "v1alpha1"}

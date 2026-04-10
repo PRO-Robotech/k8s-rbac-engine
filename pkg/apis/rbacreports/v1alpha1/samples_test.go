@@ -93,8 +93,8 @@ func validateSamplePolicy(t *testing.T, name string, p *v1alpha1.RbacPolicy) {
 	if p.Kind != "RbacPolicy" {
 		t.Errorf("%s: kind = %q, want RbacPolicy", name, p.Kind)
 	}
-	if p.APIVersion != "rbacreports.incloud.io/v1alpha1" {
-		t.Errorf("%s: apiVersion = %q, want rbacreports.incloud.io/v1alpha1", name, p.APIVersion)
+	if p.APIVersion != "rbacreports.in-cloud.io/v1alpha1" {
+		t.Errorf("%s: apiVersion = %q, want rbacreports.in-cloud.io/v1alpha1", name, p.APIVersion)
 	}
 	if p.Name == "" {
 		t.Errorf("%s: metadata.name is empty", name)

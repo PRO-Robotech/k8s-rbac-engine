@@ -5,7 +5,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-const GroupName = "rbacgraph.incloud.io"
+const GroupName = "rbacgraph.in-cloud.io"
 
 var SchemeGroupVersion = schema.GroupVersion{Group: GroupName, Version: runtime.APIVersionInternal}
 

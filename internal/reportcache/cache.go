@@ -26,7 +26,7 @@ import (
 
 var _ engine.ReportLookup = (*Cache)(nil)
 
-var ErrCRDNotInstalled = errors.New("rbacreports.incloud.io/v1alpha1 CRDs not installed in cluster")
+var ErrCRDNotInstalled = errors.New("rbacreports.in-cloud.io/v1alpha1 CRDs not installed in cluster")
 
 // Cache is the report cache.
 type Cache struct {

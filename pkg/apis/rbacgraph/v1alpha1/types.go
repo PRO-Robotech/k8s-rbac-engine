@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	GroupName       = "rbacgraph.incloud.io"
+	GroupName       = "rbacgraph.in-cloud.io"
 	Version         = "v1alpha1"
 	Kind            = "RoleGraphReview"
 	Resource        = "rolegraphreviews"

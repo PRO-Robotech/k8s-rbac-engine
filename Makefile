@@ -80,9 +80,9 @@ kind-install: kind-load build-installer
 	kubectl apply -f dist/install.yaml
 	@echo ">>> Waiting for rbac-engine deployment to be ready..."
 	kubectl -n $(NAMESPACE) rollout status deployment/rbac-engine --timeout=120s
-	@echo ">>> Waiting for v1alpha1.rbacgraph.incloud.io APIService..."
+	@echo ">>> Waiting for v1alpha1.rbacgraph.in-cloud.io APIService..."
 	kubectl wait --for=condition=Available --timeout=120s \
-	    apiservice/v1alpha1.rbacgraph.incloud.io
+	    apiservice/v1alpha1.rbacgraph.in-cloud.io
 	@echo ">>> Installing built-in policies (config/samples/)..."
 	kubectl apply -k config/samples
 	@echo ">>> Done. Run 'make kind-verify' for smoke checks."
@@ -93,7 +93,7 @@ kind-uninstall:
 
 kind-verify:
 	@echo ">>> APIService availability"
-	kubectl get apiservice v1alpha1.rbacgraph.incloud.io
+	kubectl get apiservice v1alpha1.rbacgraph.in-cloud.io
 	@echo
 	@echo ">>> Deployment status"
 	kubectl -n $(NAMESPACE) get deployment rbac-engine
@@ -108,7 +108,7 @@ kind-verify:
 	kubectl get rbacreports -A --no-headers 2>/dev/null | wc -l
 	@echo
 	@echo ">>> Sample aggregated API query: roles granting access to secrets"
-	@printf '%s' '{"apiVersion":"rbacgraph.incloud.io/v1alpha1","kind":"RoleGraphReview","spec":{"selector":{"resources":["secrets"],"verbs":["get"]}}}' \
-	  | kubectl create --raw /apis/rbacgraph.incloud.io/v1alpha1/rolegraphreviews -f - \
+	@printf '%s' '{"apiVersion":"rbacgraph.in-cloud.io/v1alpha1","kind":"RoleGraphReview","spec":{"selector":{"resources":["secrets"],"verbs":["get"]}}}' \
+	  | kubectl create --raw /apis/rbacgraph.in-cloud.io/v1alpha1/rolegraphreviews -f - \
 	  | python3 -c 'import json,sys; d=json.load(sys.stdin); nodes=d["status"]["graph"]["nodes"]; enriched=sum(1 for n in nodes if n.get("assessment")); print("    matched", len(nodes), "nodes,", enriched, "with assessment")' \
 	  || echo "    (graph query failed — check operator logs)"
