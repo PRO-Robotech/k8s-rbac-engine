@@ -10,9 +10,30 @@
     "version": "v1alpha1"
   },
   "paths": {
+    "/apis/rbacgraph.in-cloud.io/v1alpha1/nonresourceurls": {
+      "get": {
+        "description": "List non-resource URLs found across ClusterRole rules",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "rbacgraph"
+        ],
+        "summary": "List NonResourceURLs",
+        "operationId": "listNonResourceURLs",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1alpha1.NonResourceURLList"
+            }
+          }
+        }
+      }
+    },
     "/apis/rbacgraph.in-cloud.io/v1alpha1/rolegraphreviews": {
       "post": {
-        "description": "Query the RBAC role graph. Submit a RoleGraphReview with a selector to discover matching roles, bindings, subjects, and optionally pods/workloads.",
+        "description": "Query the RBAC role graph",
         "consumes": [
           "application/json"
         ],
@@ -22,11 +43,10 @@
         "tags": [
           "rbacgraph"
         ],
-        "summary": "Create a RoleGraphReview",
+        "summary": "Query the RBAC role graph",
         "operationId": "createRoleGraphReview",
         "parameters": [
           {
-            "description": "RoleGraphReview request",
             "name": "body",
             "in": "body",
             "required": true,
@@ -60,12 +80,69 @@
           }
         }
       }
+    },
+    "/apis/rbacgraph.in-cloud.io/v1alpha1/rolepermissionsviews": {
+      "post": {
+        "description": "Get detailed permission breakdown for a single Role or ClusterRole",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "rbacgraph"
+        ],
+        "summary": "Get detailed permission breakdown for a single Role or ClusterRole",
+        "operationId": "createRolePermissionsView",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1alpha1.RolePermissionsView"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "$ref": "#/definitions/v1alpha1.RolePermissionsView"
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
     "io.k8s.apimachinery.pkg.apis.meta.v1.FieldsV1": {
       "description": "FieldsV1 stores a set of fields in a data structure like a Trie, in JSON format.\n\nEach key is either a '.' representing the field itself, and will always map to an empty set, or a string representing a sub-field or item. The string will follow one of these four formats: 'f:\u003cname\u003e', where \u003cname\u003e is the name of a field in a struct, or key in a map 'v:\u003cvalue\u003e', where \u003cvalue\u003e is the exact json formatted value of a list item 'i:\u003cindex\u003e', where \u003cindex\u003e is position of a item in a list 'k:\u003ckeys\u003e', where \u003ckeys\u003e is a map of  a list item's key fields to their unique values If a key maps to an empty Fields value, the field that key represents is part of the set.\n\nThe exact format is defined in sigs.k8s.io/structured-merge-diff",
       "type": "object"
+    },
+    "io.k8s.apimachinery.pkg.apis.meta.v1.ListMeta": {
+      "description": "ListMeta describes metadata that synthetic resources must have, including lists and various status objects. A resource may have only one of {ObjectMeta, ListMeta}.",
+      "type": "object",
+      "properties": {
+        "continue": {
+          "description": "continue may be set if the user set a limit on the number of items returned, and indicates that the server has more data available. The value is opaque and may be used to issue another request to the endpoint that served this list to retrieve the next set of available objects. Continuing a consistent list may not be possible if the server configuration has changed or more than a few minutes have passed. The resourceVersion field returned when using this continue value will be identical to the value in the first response, unless you have received this token from an error message.",
+          "type": "string"
+        },
+        "remainingItemCount": {
+          "description": "remainingItemCount is the number of subsequent items in the list which are not included in this list response. If the list request contained label or field selectors, then the number of remaining items is unknown and the field will be left unset and omitted during serialization. If the list is complete (either because it is not chunking or because this is the last chunk), then there are no more remaining items and this field will be left unset and omitted during serialization. Servers older than v1.15 do not set this field. The intended use of the remainingItemCount is *estimating* the size of a collection. Clients should not rely on the remainingItemCount to be set or to be exact.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "resourceVersion": {
+          "description": "String that identifies the server's internal version of this object that can be used by clients to determine when objects have changed. Value must be treated as opaque by clients and passed unmodified back to the server. Populated by the system. Read-only. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency",
+          "type": "string"
+        },
+        "selfLink": {
+          "description": "Deprecated: selfLink is a legacy read-only field that is no longer populated by the system.",
+          "type": "string"
+        }
+      }
     },
     "io.k8s.apimachinery.pkg.apis.meta.v1.ManagedFieldsEntry": {
       "description": "ManagedFieldsEntry is a workflow-id, a FieldSet and the group version of the resource that the fieldset applies to.",
@@ -244,6 +321,32 @@
       "type": "string",
       "format": "date-time"
     },
+    "k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.APIGroupPermissions": {
+      "type": "object",
+      "required": [
+        "apiGroup",
+        "resourcesCount",
+        "resources"
+      ],
+      "properties": {
+        "apiGroup": {
+          "type": "string",
+          "default": ""
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "default": {},
+            "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.ResourcePermissions"
+          }
+        },
+        "resourcesCount": {
+          "type": "integer",
+          "format": "int32",
+          "default": 0
+        }
+      }
+    },
     "k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.Assessment": {
       "description": "Assessment summarizes policy violations for a role node.",
       "type": "object",
@@ -289,6 +392,48 @@
           "type": "integer",
           "format": "int32",
           "default": 0
+        }
+      }
+    },
+    "k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.GrantingRule": {
+      "type": "object",
+      "required": [
+        "ruleIndex",
+        "verbs"
+      ],
+      "properties": {
+        "apiGroups": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "default": ""
+          }
+        },
+        "nonResourceURLs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "default": ""
+          }
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "default": ""
+          }
+        },
+        "ruleIndex": {
+          "type": "integer",
+          "format": "int32",
+          "default": 0
+        },
+        "verbs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "default": ""
+          }
         }
       }
     },
@@ -464,6 +609,104 @@
         }
       }
     },
+    "k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.NonResourceURLEntry": {
+      "description": "NonResourceURLEntry represents a single non-resource URL with its verbs and source roles.",
+      "type": "object",
+      "required": [
+        "url",
+        "verbs",
+        "roles"
+      ],
+      "properties": {
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "default": ""
+          }
+        },
+        "url": {
+          "type": "string",
+          "default": ""
+        },
+        "verbs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "default": ""
+          }
+        }
+      }
+    },
+    "k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.NonResourceURLList": {
+      "description": "NonResourceURLList is a list of non-resource URLs found across ClusterRole rules.",
+      "type": "object",
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "apiVersion": {
+          "description": "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
+          "type": "string"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "default": {},
+            "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.NonResourceURLEntry"
+          }
+        },
+        "kind": {
+          "description": "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
+          "type": "string"
+        },
+        "metadata": {
+          "default": {},
+          "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.ListMeta"
+        }
+      }
+    },
+    "k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.NonResourceURLPermissionEntry": {
+      "type": "object",
+      "required": [
+        "url",
+        "verbs"
+      ],
+      "properties": {
+        "url": {
+          "type": "string",
+          "default": ""
+        },
+        "verbs": {
+          "type": "object",
+          "additionalProperties": {
+            "default": {},
+            "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.VerbPermission"
+          }
+        }
+      }
+    },
+    "k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.NonResourceURLPermissions": {
+      "type": "object",
+      "required": [
+        "urlsCount",
+        "urls"
+      ],
+      "properties": {
+        "urls": {
+          "type": "array",
+          "items": {
+            "default": {},
+            "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.NonResourceURLPermissionEntry"
+          }
+        },
+        "urlsCount": {
+          "type": "integer",
+          "format": "int32",
+          "default": 0
+        }
+      }
+    },
     "k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.ResourceMapRow": {
       "type": "object",
       "required": [
@@ -495,6 +738,29 @@
         },
         "verb": {
           "type": "string"
+        }
+      }
+    },
+    "k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.ResourcePermissions": {
+      "type": "object",
+      "required": [
+        "plural",
+        "verbs"
+      ],
+      "properties": {
+        "phantom": {
+          "type": "boolean"
+        },
+        "plural": {
+          "type": "string",
+          "default": ""
+        },
+        "verbs": {
+          "type": "object",
+          "additionalProperties": {
+            "default": {},
+            "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.VerbPermission"
+          }
         }
       }
     },
@@ -645,6 +911,132 @@
         }
       }
     },
+    "k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.RolePermissionsView": {
+      "description": "RolePermissionsView returns a detailed permission breakdown for a single Role or ClusterRole.",
+      "type": "object",
+      "required": [
+        "spec"
+      ],
+      "properties": {
+        "apiVersion": {
+          "description": "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
+          "type": "string"
+        },
+        "kind": {
+          "description": "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
+          "type": "string"
+        },
+        "metadata": {
+          "default": {},
+          "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.ObjectMeta"
+        },
+        "spec": {
+          "default": {},
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.RolePermissionsViewSpec"
+        },
+        "status": {
+          "default": {},
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.RolePermissionsViewStatus"
+        }
+      }
+    },
+    "k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.RolePermissionsViewSpec": {
+      "type": "object",
+      "required": [
+        "role"
+      ],
+      "properties": {
+        "filterPhantomAPIs": {
+          "type": "boolean"
+        },
+        "matchMode": {
+          "description": "Possible enum values:\n - `\"all\"`\n - `\"any\"`",
+          "type": "string",
+          "enum": [
+            "all",
+            "any"
+          ]
+        },
+        "role": {
+          "default": {},
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.RoleRef"
+        },
+        "selector": {
+          "default": {},
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.Selector"
+        },
+        "wildcardMode": {
+          "description": "Possible enum values:\n - `\"exact\"`\n - `\"wildcard\"`",
+          "type": "string",
+          "enum": [
+            "exact",
+            "wildcard"
+          ]
+        }
+      }
+    },
+    "k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.RolePermissionsViewStatus": {
+      "type": "object",
+      "required": [
+        "name",
+        "scope",
+        "apiGroups"
+      ],
+      "properties": {
+        "apiGroups": {
+          "type": "array",
+          "items": {
+            "default": {},
+            "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.APIGroupPermissions"
+          }
+        },
+        "assessment": {
+          "description": "Assessment is populated when the apiserver is running with report enrichment enabled and an RbacReport / ClusterRbacReport exists for this role. The field is omitted from JSON when nil so the response shape is unchanged for callers that do not have reports installed.",
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.Assessment"
+        },
+        "name": {
+          "type": "string",
+          "default": ""
+        },
+        "nonResourceUrls": {
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.NonResourceURLPermissions"
+        },
+        "scope": {
+          "description": "Possible enum values:\n - `\"cluster\"`\n - `\"namespace\"`",
+          "type": "string",
+          "default": "",
+          "enum": [
+            "cluster",
+            "namespace"
+          ]
+        }
+      }
+    },
+    "k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.RoleRef": {
+      "type": "object",
+      "required": [
+        "kind",
+        "name"
+      ],
+      "properties": {
+        "kind": {
+          "description": "Possible enum values:\n - `\"ClusterRole\"`\n - `\"Role\"`",
+          "type": "string",
+          "default": "",
+          "enum": [
+            "ClusterRole",
+            "Role"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "default": ""
+        },
+        "namespace": {
+          "type": "string"
+        }
+      }
+    },
     "k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.RuleRef": {
       "type": "object",
       "properties": {
@@ -736,6 +1128,30 @@
             "type": "string",
             "default": ""
           }
+        }
+      }
+    },
+    "k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.VerbPermission": {
+      "type": "object",
+      "required": [
+        "granted",
+        "supportedByApi"
+      ],
+      "properties": {
+        "granted": {
+          "type": "boolean",
+          "default": false
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "default": {},
+            "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.GrantingRule"
+          }
+        },
+        "supportedByApi": {
+          "type": "boolean",
+          "default": false
         }
       }
     }

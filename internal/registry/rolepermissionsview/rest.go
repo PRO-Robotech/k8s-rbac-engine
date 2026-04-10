@@ -188,7 +188,7 @@ func buildStatus(
 		}
 		filterURLs := hasSelector && len(spec.Selector.NonResourceURLs) > 0
 		for _, url := range rule.NonResourceURLs {
-			if filterURLs && !containsCI(spec.Selector.NonResourceURLs, url) {
+			if filterURLs && !nonResourceURLCovers(url, spec.Selector.NonResourceURLs, expandWildcards) {
 				continue
 			}
 			if urlVerbs[url] == nil {
@@ -313,6 +313,28 @@ func intersectVerbs(ruleVerbs, selectorVerbs []string) []string {
 	}
 
 	return out
+}
+
+// nonResourceURLCovers checks whether ruleURL covers any of the selectorURLs.
+func nonResourceURLCovers(ruleURL string, selectorURLs []string, expandWildcards bool) bool {
+	r := strings.TrimSpace(ruleURL)
+	for _, sel := range selectorURLs {
+		s := strings.TrimSpace(sel)
+		if r == s {
+			return true
+		}
+		if !expandWildcards {
+			continue
+		}
+		if r == "*" || s == "*" {
+			return true
+		}
+		if prefix, ok := strings.CutSuffix(r, "*"); ok && strings.HasPrefix(s, prefix) {
+			return true
+		}
+	}
+
+	return false
 }
 
 func containsCI(haystack []string, needle string) bool {
