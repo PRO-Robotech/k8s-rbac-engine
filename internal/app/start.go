@@ -172,6 +172,7 @@ func (o *ServerOptions) Validate() error {
 // subsystem to fail or shut down cancels the other and Run returns its
 // error.
 func (o *ServerOptions) Run(ctx context.Context) error {
+	ctrl.SetLogger(klog.NewKlogr())
 	klog.Infof("starting rbac-engine in mode=%s", o.Mode)
 
 	g, gctx := errgroup.WithContext(ctx)
