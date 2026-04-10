@@ -77,12 +77,7 @@ func (r *REST) Create(_ context.Context, obj runtime.Object, _ rest.ValidateObje
 			rbacgraph.RoleRefKindClusterRole, rbacgraph.RoleRefKindRole, spec.Role.Kind))
 	}
 
-	if spec.MatchMode == "" {
-		spec.MatchMode = rbacgraph.MatchModeAny
-	}
-	if spec.WildcardMode == "" {
-		spec.WildcardMode = rbacgraph.WildcardModeWildcard
-	}
+	applySpecDefaults(spec)
 	if spec.WildcardMode != rbacgraph.WildcardModeWildcard && spec.WildcardMode != rbacgraph.WildcardModeExact {
 		return nil, apierrors.NewBadRequest(fmt.Sprintf("invalid wildcardMode %q", spec.WildcardMode))
 	}
@@ -110,6 +105,19 @@ func (r *REST) Create(_ context.Context, obj runtime.Object, _ rest.ValidateObje
 type resourceKey struct {
 	apiGroup string
 	resource string
+}
+
+func applySpecDefaults(spec *rbacgraph.RolePermissionsViewSpec) {
+	if spec.MatchMode == "" {
+		spec.MatchMode = rbacgraph.MatchModeAny
+	}
+
+	switch spec.WildcardMode {
+	case "":
+		spec.WildcardMode = rbacgraph.WildcardModeWildcard
+	case "expand":
+		spec.WildcardMode = rbacgraph.WildcardModeWildcard
+	}
 }
 
 // verbGrant tracks which rule index granted a verb.
