@@ -1,0 +1,24 @@
+apiVersion: rbacreports.incloud.io/v1alpha1
+kind: RbacPolicy
+metadata:
+  name: ksv047-node-proxy
+spec:
+  severity: HIGH
+  category: Kubernetes Security Check
+  checkID: KSV047
+  title: Do not allow privilege escalation from node proxy
+  description: >-
+    Access to nodes/proxy lets a caller send arbitrary HTTP requests to the
+    kubelet on each node. The kubelet then forwards the request to whichever
+    container is targeted, bypassing the API server's authorization layer for
+    container-level operations and enabling escalation to host or container
+    contexts.
+  remediation: >-
+    Remove access to nodes/proxy from any role that does not require kubelet-level
+    diagnostics. If diagnostic access is required, scope it to a specific
+    debug/troubleshooting ServiceAccount used only for incident response.
+  match:
+    conditions:
+      - field: resources
+        operator: containsExact
+        value: "nodes/proxy"

@@ -1,0 +1,28 @@
+# RoleBinding to the built-in extension-apiserver-authentication-reader
+# role in the kube-system namespace.
+#
+# kube-apiserver publishes its client CA bundle and other authentication
+# parameters in the kube-system/extension-apiserver-authentication
+# ConfigMap. Aggregated apiservers must read this ConfigMap on startup
+# to validate client certificates presented by kube-apiserver during the
+# proxy-back authentication handshake.
+#
+# This binding lives in kube-system because the Role it references is
+# also in kube-system. Cross-namespace bindings are valid: subject can
+# live in any namespace, only the binding object itself must share the
+# namespace with the Role.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: rbac-engine-extension-apiserver-authentication-reader
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: rbac-engine
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: extension-apiserver-authentication-reader
+subjects:
+  - kind: ServiceAccount
+    name: rbac-engine
+    namespace: rbac-engine-system

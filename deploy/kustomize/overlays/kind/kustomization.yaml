@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Kind-cluster overlay. Pulls the base layout (CRDs + RBAC + manager) and
+# pins the image to the local kind-loaded tag. To deploy:
+#
+#   make docker-engine
+#   kind load docker-image rbac-engine:dev --name <cluster>
+#   kubectl apply -k deploy/kustomize/overlays/kind
+#
+# For non-kind environments, copy this file into a sibling overlay
+# directory and adjust `images:` and any other patches.
+
+resources:
+  - ../../base
+
+images:
+  - name: rbac-engine
+    newTag: dev

@@ -1,0 +1,35 @@
+# .dockerignore — keep the build context small.
+#
+# Only cmd/, internal/, pkg/, go.mod, and go.sum are needed by the
+# Dockerfile build stage. Everything else can be excluded so `docker build`
+# does not stream hundreds of megabytes to the daemon on every invocation.
+
+# git + caches + build artifacts
+.git/
+.gitignore
+.cache/
+bin/
+dist/
+
+# Project trees not needed for the binary build
+api/
+deploy/
+docs/
+config/
+hack/
+**/testdata/
+
+# IDE / editor / OS metadata
+.idea/
+.vscode/
+.DS_Store
+*.iml
+*.swp
+
+# Documentation and licensing — read on the host, not in the container
+*.md
+LICENSE*
+
+# Dockerfile and dockerignore themselves do not need to be in the context
+Dockerfile
+.dockerignore

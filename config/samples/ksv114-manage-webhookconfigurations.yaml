@@ -1,0 +1,33 @@
+apiVersion: rbacreports.incloud.io/v1alpha1
+kind: RbacPolicy
+metadata:
+  name: ksv114-manage-webhookconfigurations
+spec:
+  severity: CRITICAL
+  category: Kubernetes Security Check
+  checkID: KSV114
+  title: Manage webhookconfigurations
+  description: >-
+    Write access to MutatingWebhookConfiguration or ValidatingWebhookConfiguration
+    lets a caller intercept and modify any object that flows through the API
+    server, including Secrets, Pods, and RBAC resources. A malicious webhook can
+    persistently exfiltrate secrets, inject sidecars, or override admission
+    decisions for the entire cluster.
+  remediation: >-
+    Restrict webhook configuration management to a single break-glass identity.
+    Audit all existing webhooks for endpoint URLs that point outside the
+    cluster's trust boundary.
+  match:
+    apiGroups:
+      - admissionregistration.k8s.io
+    resources:
+      - mutatingwebhookconfigurations
+      - validatingwebhookconfigurations
+    verbs:
+      - create
+      - update
+      - patch
+      - delete
+      - deletecollection
+      - impersonate
+      - "*"

@@ -1,0 +1,194 @@
+version: "2"
+
+run:
+  timeout: 5m
+
+linters:
+  # Standard preset: errcheck, govet, ineffassign, staticcheck (includes gosimple), unused
+  default: standard
+
+  enable:
+    # Error handling
+    - errorlint       # Correct error wrapping (%w) and comparison (errors.Is/As)
+    - noctx           # Require context.Context in HTTP requests
+
+    # Security
+    - gosec           # Security-oriented checks
+
+    # Code quality
+    - gocritic        # Opinionated checks for bugs, performance, style
+    - revive          # Extensible replacement for golint
+    - unconvert       # Remove unnecessary type conversions
+    - unparam         # Find unused function parameters
+
+    # Complexity
+    - gocognit        # Cognitive complexity
+    - gocyclo         # Cyclomatic complexity
+    - funlen          # Function length limits
+    - nestif          # Deeply nested ifs
+
+    # Performance
+    - prealloc        # Suggest slice preallocations
+    - bodyclose       # Ensure HTTP response body is closed
+    - perfsprint      # fmt.Errorf -> errors.New for static strings
+
+    # Style
+    - misspell        # Catch common English misspellings
+    - goconst         # Find repeated strings -> constants
+    - dupl            # Detect code duplication
+    - whitespace      # Detect leading/trailing whitespace issues
+    - nlreturn        # Blank line before return/branch statements
+    - nakedret        # Naked returns in long functions
+    - dupword         # Duplicate words in comments
+
+    # Safety
+    - nilerr          # nil error returns when err != nil
+    - nilnil          # nil, nil returns
+    - forcetypeassert # Unsafe type assertions
+    - nolintlint      # Stale/invalid nolint directives
+    - predeclared     # Shadowing builtins (copy, len, etc.)
+
+    # Preventive
+    - modernize       # interface{} -> any, maps.Copy, etc.
+    - reassign        # Prevent package var reassignment
+    - wastedassign    # Unused assignments
+    - recvcheck       # Receiver consistency (pointer vs value)
+    - fatcontext      # Nested contexts in loops
+    - intrange        # Integer range loops
+    - copyloopvar     # Loop variable copies
+    - usestdlibvars   # Prefer stdlib constants
+
+    # Test quality
+    - usetesting      # testing package correctness
+    - thelper          # t.Helper() in test helpers
+
+  settings:
+    funlen:
+      lines: 100
+      statements: 60
+
+    gocognit:
+      min-complexity: 20
+
+    gocyclo:
+      min-complexity: 12
+
+    goconst:
+      min-len: 3
+      min-occurrences: 3
+      ignore-tests: true
+
+    dupl:
+      threshold: 120
+
+    nestif:
+      min-complexity: 4
+
+    nakedret:
+      max-func-lines: 3
+
+    errcheck:
+      check-type-assertions: true
+
+    govet:
+      enable-all: true
+      disable:
+        - shadow         # Too noisy for K8s code with err/ctx reuse
+        - fieldalignment # K8s structs prioritize readability over packing
+
+    gocritic:
+      enabled-tags:
+        - diagnostic
+        - style
+        - performance
+      disabled-checks:
+        - ifElseChain      # noisy on error-handling chains
+        - singleCaseSwitch # legitimate for future expansion
+        - commentFormatting # conflicts with license headers
+        - hugeParam        # too noisy for K8s code with value-typed specs/selectors
+
+    revive:
+      rules:
+        - name: unused-parameter
+          disabled: true   # K8s interfaces require specific signatures
+        - name: exported
+          disabled: true
+        - name: package-comments
+          disabled: true
+
+    gosec:
+      excludes:
+        - G101 # false positive on "token" variable names
+
+    prealloc:
+      simple: true
+      range-loops: true
+      for-loops: false
+
+    misspell:
+      extra-words:
+        - typo: "Creater"
+          correction: "Creater"
+
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+
+  exclusions:
+    generated: strict
+    paths:
+      - hack/
+      - "^.cache/"
+      - '\.idea'
+
+    rules:
+      # Relax complexity/security/context checks in tests
+      - path: _test\.go
+        linters:
+          - errcheck
+          - dupl
+          - funlen
+          - gocognit
+          - gocyclo
+          - gosec
+          - nestif
+          - forcetypeassert
+          - goconst
+          - noctx
+          - nilerr
+          - gocritic
+
+      # K8s API types follow K8s conventions (interface{} in OpenAPI generated code)
+      - path: pkg/apis/rbacgraph/v1alpha1/
+        linters: [modernize]
+
+      # The two reconcilers (Role + ClusterRole) are structurally identical
+      # by design: controller-runtime's For() / Owns() require concrete
+      # types per Reconciler, and sharing logic via generics would lose the
+      # typed client.Object guarantees. See doc comment on RoleReconciler.
+      - path: 'internal/controller/(role|clusterrole)_controller\.go'
+        linters: [dupl]
+
+      # K8s API types mix pointer/value receivers by design:
+      # deepcopy (pointer) + OpenAPIModelName (value, required by interface)
+      - path: 'pkg/apis/'
+        linters: [recvcheck]
+
+      # Allow unchecked Close() in deferred calls
+      - text: 'Error return value of .*(Close|Flush|Remove).*is not checked'
+        linters:
+          - errcheck
+
+      # SA1019: allow deprecated k8s APIs during migration periods
+      - linters: [staticcheck]
+        text: "SA1019:"
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+
+  settings:
+    goimports:
+      local-prefixes:
+        - k8s-rbac-engine

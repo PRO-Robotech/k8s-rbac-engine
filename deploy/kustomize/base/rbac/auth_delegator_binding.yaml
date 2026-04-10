@@ -1,0 +1,24 @@
+# ClusterRoleBinding to the built-in system:auth-delegator role.
+#
+# The aggregated apiserver delegates *authentication* and *authorization*
+# decisions to the kube-apiserver: when a client calls
+# /apis/rbacgraph.incloud.io/..., kube-apiserver proxies the request to
+# our pod, and we ask kube-apiserver "is this client allowed to do this?"
+# via TokenReview / SubjectAccessReview. system:auth-delegator grants
+# exactly those permissions.
+#
+# Without this binding, every request to the aggregated API returns 401.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: rbac-engine:system:auth-delegator
+  labels:
+    app.kubernetes.io/name: rbac-engine
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:auth-delegator
+subjects:
+  - kind: ServiceAccount
+    name: rbac-engine
+    namespace: rbac-engine-system

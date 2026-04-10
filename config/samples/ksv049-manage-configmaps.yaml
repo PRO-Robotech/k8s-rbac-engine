@@ -1,0 +1,29 @@
+apiVersion: rbacreports.incloud.io/v1alpha1
+kind: RbacPolicy
+metadata:
+  name: ksv049-manage-configmaps
+spec:
+  severity: MEDIUM
+  category: Kubernetes Security Check
+  checkID: KSV049
+  title: Manage configmaps
+  description: >-
+    ConfigMaps frequently hold runtime configuration that controls application
+    behavior — feature flags, JVM args, kubelet drop-in files, sidecar settings.
+    Write access can be used to alter application behavior or pivot to a more
+    privileged context (e.g. modifying coreDNS or kube-proxy configuration).
+  remediation: >-
+    Restrict ConfigMap write access to the controllers that manage the workload
+    that owns the ConfigMap. Avoid wildcard write across all ConfigMaps in a
+    namespace; use resourceNames where possible.
+  match:
+    apiGroups: [""]
+    resources: [configmaps]
+    verbs:
+      - create
+      - update
+      - patch
+      - delete
+      - deletecollection
+      - impersonate
+      - "*"

@@ -1,0 +1,37 @@
+apiVersion: rbacreports.incloud.io/v1alpha1
+kind: RbacPolicy
+metadata:
+  name: ksv048-manage-workloads-apps
+spec:
+  severity: MEDIUM
+  category: Kubernetes Security Check
+  checkID: KSV048
+  title: Manage Kubernetes workloads (apps)
+  description: >-
+    Write access to workload controllers (Deployments, StatefulSets, DaemonSets,
+    Jobs, CronJobs) lets a caller indirectly create or modify Pods with arbitrary
+    SecurityContext, volumes, and image fields, by editing the controller's
+    PodTemplateSpec.
+  remediation: >-
+    Limit write access on workload controllers to deployment automation that
+    actually rolls out application changes. Read-only access (get/list/watch) is
+    sufficient for most observability tooling.
+  match:
+    apiGroups:
+      - apps
+      - batch
+    resources:
+      - deployments
+      - replicasets
+      - statefulsets
+      - daemonsets
+      - jobs
+      - cronjobs
+    verbs:
+      - create
+      - update
+      - patch
+      - delete
+      - deletecollection
+      - impersonate
+      - "*"

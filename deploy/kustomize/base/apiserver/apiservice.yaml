@@ -1,0 +1,34 @@
+# APIService registration for the rbacgraph.incloud.io aggregated API.
+#
+# When kube-apiserver receives a request for /apis/rbacgraph.incloud.io/...
+# it consults this object to find out where to proxy the request. The
+# spec.service block points at the rbac-engine Service in
+# rbac-engine-system, and kube-apiserver proxies the HTTPS call to its
+# port 443 (which the Service maps to container port 6443).
+#
+# insecureSkipTLSVerify is intentionally true for the kind / local-test
+# overlay: the rbac-engine binary uses RecommendedOptions, which auto-
+# generates an in-memory self-signed cert at startup if no --tls-cert-file
+# is provided. The kube-apiserver has no way to know that CA, so it must
+# either skip verification or be supplied with a CA bundle (cert-manager).
+#
+# For production overlays, replace insecureSkipTLSVerify with caBundle
+# managed by cert-manager via the cert-manager.io/inject-ca-from
+# annotation, and remove the flag.
+apiVersion: apiregistration.k8s.io/v1
+kind: APIService
+metadata:
+  name: v1alpha1.rbacgraph.incloud.io
+  labels:
+    app.kubernetes.io/name: rbac-engine
+    app.kubernetes.io/component: aggregated-apiserver
+spec:
+  group: rbacgraph.incloud.io
+  version: v1alpha1
+  groupPriorityMinimum: 100
+  versionPriority: 100
+  service:
+    name: rbac-engine
+    namespace: rbac-engine-system
+    port: 443
+  insecureSkipTLSVerify: true

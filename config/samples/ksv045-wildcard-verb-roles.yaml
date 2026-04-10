@@ -1,0 +1,27 @@
+apiVersion: rbacreports.incloud.io/v1alpha1
+kind: RbacPolicy
+metadata:
+  name: ksv045-wildcard-verb-roles
+spec:
+  severity: CRITICAL
+  category: Kubernetes Security Check
+  checkID: KSV045
+  title: No wildcard verb roles
+  description: >-
+    A rule with verbs ["*"] grants every possible action on the listed resources,
+    including server-side patches, exec, and impersonation. Combined with a
+    concrete resource list it is still over-broad and complements KSV044
+    (which catches "everything on everything"). KSV045 catches "everything on
+    something".
+  remediation: >-
+    Enumerate the verbs the role actually needs (typically a subset of get, list,
+    watch, create, update, patch, delete). Avoid the literal "*" verb in any
+    rule unless the role is explicitly meant to be cluster-admin.
+  match:
+    conditions:
+      - field: verbs
+        operator: containsExact
+        value: "*"
+      - field: resources
+        operator: notContains
+        value: "*"

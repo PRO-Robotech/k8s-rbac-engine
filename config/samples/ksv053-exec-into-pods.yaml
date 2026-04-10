@@ -1,0 +1,29 @@
+apiVersion: rbacreports.incloud.io/v1alpha1
+kind: RbacPolicy
+metadata:
+  name: ksv053-exec-into-pods
+spec:
+  severity: HIGH
+  category: Kubernetes Security Check
+  checkID: KSV053
+  title: Exec into Pods
+  description: >-
+    Access to the pods/exec subresource lets a caller run arbitrary commands
+    inside any container they can target. Combined with a privileged container,
+    a hostPath mount, or a high-permission ServiceAccount, this is a direct path
+    to host root or cluster-admin.
+  remediation: >-
+    Limit pods/exec to a small set of trusted operator identities (or remove
+    entirely in production). For routine debugging, prefer ephemeral containers
+    or read-only log access.
+  match:
+    apiGroups: [""]
+    resources: [pods/exec]
+    verbs:
+      - create
+      - update
+      - patch
+      - delete
+      - deletecollection
+      - impersonate
+      - "*"

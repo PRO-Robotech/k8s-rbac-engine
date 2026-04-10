@@ -1,0 +1,21 @@
+apiVersion: rbacreports.incloud.io/v1alpha1
+kind: RbacPolicy
+metadata:
+  name: ksv044-wildcard-verb-and-resource
+spec:
+  severity: CRITICAL
+  category: Kubernetes Security Check
+  checkID: KSV044
+  title: No wildcard verb and resource roles
+  description: >-
+    A role with both verbs ["*"] and resources ["*"] grants unrestricted access
+    to every API in every group it can reach. This is the most permissive RBAC
+    pattern and effectively grants cluster-admin within the bound scope.
+  remediation: >-
+    Replace the literal "*" with the minimum set of resources and verbs the role
+    actually needs. If full access is required for a system controller, document
+    why and restrict the binding scope.
+  match:
+    matchMode: exact
+    resources: ["*"]
+    verbs: ["*"]

@@ -1,0 +1,16 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: rbac-engine-operator
+  labels:
+    app.kubernetes.io/name: rbac-engine
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  # The ClusterRole name must match `roleName` in hack/update-manifests.sh,
+  # which is also the name controller-gen embeds in the generated role.yaml.
+  name: rbac-engine-operator
+subjects:
+  - kind: ServiceAccount
+    name: rbac-engine
+    namespace: rbac-engine-system

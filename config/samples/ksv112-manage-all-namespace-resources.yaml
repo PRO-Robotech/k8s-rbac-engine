@@ -1,0 +1,35 @@
+apiVersion: rbacreports.incloud.io/v1alpha1
+kind: RbacPolicy
+metadata:
+  name: ksv112-manage-all-namespace-resources
+spec:
+  severity: CRITICAL
+  category: Kubernetes Security Check
+  checkID: KSV112
+  title: Manage all resources at the namespace
+  description: >-
+    A namespaced Role with resources ["*"] and at least one write verb grants
+    full control of every resource in its namespace, including Secrets,
+    ConfigMaps, ServiceAccounts, and workloads. Within that namespace this is
+    equivalent to namespace-admin and is a prerequisite for many lateral-move
+    attacks.
+  remediation: >-
+    Replace resources ["*"] with an explicit list. If a controller legitimately
+    needs broad access in a namespace, document the reason and audit the
+    binding subjects.
+  targetKinds:
+    - Role
+  match:
+    conditions:
+      - field: resources
+        operator: containsExact
+        value: "*"
+      - field: verbs
+        operator: containsAny
+        values:
+          - create
+          - update
+          - patch
+          - delete
+          - deletecollection
+          - "*"

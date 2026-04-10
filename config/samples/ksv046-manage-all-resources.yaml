@@ -1,0 +1,33 @@
+apiVersion: rbacreports.incloud.io/v1alpha1
+kind: RbacPolicy
+metadata:
+  name: ksv046-manage-all-resources
+spec:
+  severity: CRITICAL
+  category: Kubernetes Security Check
+  checkID: KSV046
+  title: Manage all resources
+  description: >-
+    A ClusterRole with resources ["*"] and at least one write verb can mutate
+    every resource type in the cluster. This is functionally equivalent to root
+    access on the cluster, regardless of which API groups are listed.
+  remediation: >-
+    Replace resources ["*"] with an explicit list of resources the role needs to
+    manage. If a role legitimately needs to write across many resource types,
+    consider splitting it into one role per resource group.
+  targetKinds:
+    - ClusterRole
+  match:
+    conditions:
+      - field: resources
+        operator: containsExact
+        value: "*"
+      - field: verbs
+        operator: containsAny
+        values:
+          - create
+          - update
+          - patch
+          - delete
+          - deletecollection
+          - "*"

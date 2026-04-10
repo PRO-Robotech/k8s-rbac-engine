@@ -1,0 +1,29 @@
+apiVersion: rbacreports.incloud.io/v1alpha1
+kind: RbacPolicy
+metadata:
+  name: ksv048-manage-workloads-core
+spec:
+  severity: MEDIUM
+  category: Kubernetes Security Check
+  checkID: KSV048
+  title: Manage Kubernetes workloads (core)
+  description: >-
+    Write access to Pods in the core API group lets a caller create or modify
+    workload definitions, including the SecurityContext, volumes, and image
+    fields. This is a precondition for many container-escape and persistence
+    techniques.
+  remediation: >-
+    Restrict write access on Pods to controllers that genuinely manage workloads
+    (e.g. Deployment controller). For human users prefer namespaced read-only
+    access plus higher-level controllers (Deployment / StatefulSet) for changes.
+  match:
+    apiGroups: [""]
+    resources: [pods]
+    verbs:
+      - create
+      - update
+      - patch
+      - delete
+      - deletecollection
+      - impersonate
+      - "*"

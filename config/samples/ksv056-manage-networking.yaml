@@ -1,0 +1,36 @@
+apiVersion: rbacreports.incloud.io/v1alpha1
+kind: RbacPolicy
+metadata:
+  name: ksv056-manage-networking
+spec:
+  severity: HIGH
+  category: Kubernetes Security Check
+  checkID: KSV056
+  title: Manage Kubernetes networking
+  description: >-
+    Write access to networking resources (Services, Endpoints, EndpointSlices,
+    NetworkPolicies, Ingresses) lets a caller intercept traffic to other
+    workloads, weaken or bypass NetworkPolicy enforcement, or expose internal
+    services to untrusted networks.
+  remediation: >-
+    Restrict networking writes to a network operator identity. Use NetworkPolicy
+    to enforce egress/ingress invariants and review changes through GitOps.
+  match:
+    apiGroups:
+      - ""
+      - networking.k8s.io
+      - discovery.k8s.io
+    resources:
+      - services
+      - endpoints
+      - endpointslices
+      - networkpolicies
+      - ingresses
+    verbs:
+      - create
+      - update
+      - patch
+      - delete
+      - deletecollection
+      - impersonate
+      - "*"

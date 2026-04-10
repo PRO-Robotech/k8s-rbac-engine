@@ -1,0 +1,27 @@
+# Service that fronts the rbac-engine pod for the aggregated API surface.
+# kube-apiserver connects to this Service (via cluster DNS) when proxying
+# requests for the rbacgraph.incloud.io group, per the APIService
+# registration in apiservice.yaml.
+#
+# Port 443 (Service) → 6443 (container) is the convention for aggregated
+# apiservers: kube-apiserver always connects to Service port 443 over
+# HTTPS, and we listen inside the container on a non-privileged port
+# because the container runs as UID 65532 (no CAP_NET_BIND_SERVICE).
+apiVersion: v1
+kind: Service
+metadata:
+  name: rbac-engine
+  namespace: rbac-engine-system
+  labels:
+    app.kubernetes.io/name: rbac-engine
+    app.kubernetes.io/component: aggregated-apiserver
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: rbac-engine
+    app.kubernetes.io/component: manager
+  ports:
+    - name: https
+      protocol: TCP
+      port: 443
+      targetPort: apiserver

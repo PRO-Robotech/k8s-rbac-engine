@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rbac-engine
+  namespace: rbac-engine-system
+  labels:
+    app.kubernetes.io/name: rbac-engine
+    app.kubernetes.io/component: manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: rbac-engine
+      app.kubernetes.io/component: manager
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: rbac-engine
+        app.kubernetes.io/component: manager
+    spec:
+      serviceAccountName: rbac-engine
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: manager
+          image: rbac-engine:dev
+          imagePullPolicy: IfNotPresent
+          args:
+            - --mode=all
+            # The aggregated apiserver listens on a non-privileged port
+            # because the container runs as UID 65532. The Service maps
+            # 443 → 6443 so kube-apiserver still talks to standard 443.
+            - --secure-port=6443
+            # Audit log to stdout so kubectl logs surfaces audit events
+            # without requiring a writable filesystem.
+            - --audit-log-path=-
+          ports:
+            - name: apiserver
+              containerPort: 6443
+              protocol: TCP
+            - name: metrics
+              containerPort: 8080
+              protocol: TCP
+            - name: healthz
+              containerPort: 8081
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: healthz
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: healthz
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          # The aggregated apiserver's RecommendedOptions auto-generates
+          # a self-signed cert at startup when no --tls-cert-file is set.
+          # That generation needs a writable temp dir; readOnlyRootFilesystem
+          # blocks /tmp by default, so we mount an emptyDir over it.
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      terminationGracePeriodSeconds: 10

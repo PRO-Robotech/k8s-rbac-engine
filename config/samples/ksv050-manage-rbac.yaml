@@ -1,0 +1,34 @@
+apiVersion: rbacreports.incloud.io/v1alpha1
+kind: RbacPolicy
+metadata:
+  name: ksv050-manage-rbac
+spec:
+  severity: CRITICAL
+  category: Kubernetes Security Check
+  checkID: KSV050
+  title: Manage Kubernetes RBAC resources
+  description: >-
+    Write access to Roles, ClusterRoles, RoleBindings, or ClusterRoleBindings
+    lets a caller grant arbitrary permissions to themselves or any other
+    subject. This is a direct privilege escalation path to cluster-admin and
+    must be limited to a small, audited set of identities.
+  remediation: >-
+    Restrict RBAC write access to a single break-glass identity managed by the
+    cluster operator team. All other automation should use ServiceAccounts with
+    only the verbs they need on their own namespaced resources.
+  match:
+    apiGroups:
+      - rbac.authorization.k8s.io
+    resources:
+      - roles
+      - rolebindings
+      - clusterroles
+      - clusterrolebindings
+    verbs:
+      - create
+      - update
+      - patch
+      - delete
+      - deletecollection
+      - impersonate
+      - "*"

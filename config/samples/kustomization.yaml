@@ -1,0 +1,36 @@
+# config/samples/ — built-in security policies, optional kustomization base.
+#
+# These 14 RbacPolicy objects implement the security checks listed in
+# docs/specs/rbac-reports-operator.md section 10. They are NOT installed
+# automatically by deploy/kustomize/base/ — install them explicitly:
+#
+#   kubectl apply -k config/samples
+#
+# or include them in a deployment overlay:
+#
+#   resources:
+#     - ../../base
+#     - ../../../config/samples
+#
+# This file is hand-written, not generated. Adding a new sample policy:
+#   1. drop the YAML in this directory
+#   2. add the filename to the resources list below
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ksv041-manage-cluster-secrets.yaml
+  - ksv044-wildcard-verb-and-resource.yaml
+  - ksv045-wildcard-verb-roles.yaml
+  - ksv046-manage-all-resources.yaml
+  - ksv047-node-proxy.yaml
+  - ksv048-manage-workloads-apps.yaml
+  - ksv048-manage-workloads-core.yaml
+  - ksv049-manage-configmaps.yaml
+  - ksv050-manage-rbac.yaml
+  - ksv053-exec-into-pods.yaml
+  - ksv056-manage-networking.yaml
+  - ksv112-manage-all-namespace-resources.yaml
+  - ksv113-manage-namespace-secrets.yaml
+  - ksv114-manage-webhookconfigurations.yaml

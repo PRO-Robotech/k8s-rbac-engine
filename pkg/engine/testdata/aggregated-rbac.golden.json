@@ -1,0 +1,89 @@
+{
+  "matchedRoles": 1,
+  "matchedBindings": 1,
+  "matchedSubjects": 1,
+  "graph": {
+    "nodes": [
+      {
+        "id": "role:clusterrole:aggregate-to-edit-source",
+        "type": "ClusterRole",
+        "name": "aggregate-to-edit-source",
+        "matchedRuleRefs": [
+          {
+            "resource": "pods",
+            "subresource": "exec",
+            "verb": "get",
+            "sourceObjectUID": "src"
+          }
+        ]
+      },
+      {
+        "id": "role:clusterrole:edit",
+        "type": "ClusterRole",
+        "name": "edit",
+        "aggregated": true,
+        "aggregationSources": [
+          "clusterrole:aggregate-to-edit-source"
+        ],
+        "matchedRuleRefs": [
+          {
+            "resource": "pods",
+            "subresource": "exec",
+            "verb": "get",
+            "sourceObjectUID": "agg"
+          }
+        ]
+      },
+      {
+        "id": "binding:clusterrolebinding:bind-edit",
+        "type": "ClusterRoleBinding",
+        "name": "bind-edit"
+      },
+      {
+        "id": "subject:user:bob",
+        "type": "User",
+        "name": "bob"
+      }
+    ],
+    "edges": [
+      {
+        "id": "edge:role:clusterrole:aggregate-to-edit-source-\u003erole:clusterrole:edit:aggregates",
+        "from": "role:clusterrole:aggregate-to-edit-source",
+        "to": "role:clusterrole:edit",
+        "type": "aggregates",
+        "explain": "ClusterRole contributes rules via aggregationRule"
+      },
+      {
+        "id": "edge:role:clusterrole:edit-\u003ebinding:clusterrolebinding:bind-edit:grants",
+        "from": "role:clusterrole:edit",
+        "to": "binding:clusterrolebinding:bind-edit",
+        "type": "grants",
+        "ruleRefs": [
+          {
+            "resource": "pods",
+            "subresource": "exec",
+            "verb": "get",
+            "sourceObjectUID": "agg"
+          }
+        ],
+        "explain": "Role referenced by binding"
+      },
+      {
+        "id": "edge:binding:clusterrolebinding:bind-edit-\u003esubject:user:bob:subjects",
+        "from": "binding:clusterrolebinding:bind-edit",
+        "to": "subject:user:bob",
+        "type": "subjects",
+        "explain": "Binding targets subject"
+      }
+    ]
+  },
+  "resourceMap": [
+    {
+      "resource": "pods/exec",
+      "verb": "get",
+      "roleCount": 1,
+      "bindingCount": 1,
+      "subjectCount": 1
+    }
+  ]
+}

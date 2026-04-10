@@ -1,0 +1,65 @@
+{
+  "matchedRoles": 1,
+  "matchedBindings": 1,
+  "matchedSubjects": 1,
+  "graph": {
+    "nodes": [
+      {
+        "id": "role:clusterrole:exec-role",
+        "type": "ClusterRole",
+        "name": "exec-role",
+        "matchedRuleRefs": [
+          {
+            "resource": "pods",
+            "subresource": "exec",
+            "verb": "create",
+            "sourceObjectUID": "r1"
+          }
+        ]
+      },
+      {
+        "id": "binding:clusterrolebinding:bind-exec",
+        "type": "ClusterRoleBinding",
+        "name": "bind-exec"
+      },
+      {
+        "id": "subject:user:alice",
+        "type": "User",
+        "name": "alice"
+      }
+    ],
+    "edges": [
+      {
+        "id": "edge:role:clusterrole:exec-role-\u003ebinding:clusterrolebinding:bind-exec:grants",
+        "from": "role:clusterrole:exec-role",
+        "to": "binding:clusterrolebinding:bind-exec",
+        "type": "grants",
+        "ruleRefs": [
+          {
+            "resource": "pods",
+            "subresource": "exec",
+            "verb": "create",
+            "sourceObjectUID": "r1"
+          }
+        ],
+        "explain": "Role referenced by binding"
+      },
+      {
+        "id": "edge:binding:clusterrolebinding:bind-exec-\u003esubject:user:alice:subjects",
+        "from": "binding:clusterrolebinding:bind-exec",
+        "to": "subject:user:alice",
+        "type": "subjects",
+        "explain": "Binding targets subject"
+      }
+    ]
+  },
+  "resourceMap": [
+    {
+      "resource": "pods/exec",
+      "verb": "create",
+      "roleCount": 1,
+      "bindingCount": 1,
+      "subjectCount": 1
+    }
+  ]
+}
