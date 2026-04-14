@@ -1,13 +1,12 @@
 name: docker-build-and-push
 on:
   push:
-    branches:
-      - "*"
-      - feature/*
-      - release/*
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+rc[0-9]+"
 
 jobs:
-  docker-build-amd64:
+  docker-build-multi-arch:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -59,7 +58,7 @@ jobs:
           file: ./Dockerfile
           push: true
           provenance: false
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:${{ steps.sanitize.outputs.branch }}-${{ steps.short-sha.outputs.sha }}
           cache-from: type=local,src=/tmp/.buildx-cache
