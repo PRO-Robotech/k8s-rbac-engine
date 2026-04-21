@@ -8,10 +8,28 @@ func RegisterDefaults(scheme *runtime.Scheme) error {
 			SetObjectDefaults_RoleGraphReview(review)
 		}
 	})
+	scheme.AddTypeDefaultingFunc(&SubjectPermissionsView{}, func(obj interface{}) {
+		if view, ok := obj.(*SubjectPermissionsView); ok {
+			SetObjectDefaults_SubjectPermissionsView(view)
+		}
+	})
+	scheme.AddTypeDefaultingFunc(&SubjectGraphReview{}, func(obj interface{}) {
+		if review, ok := obj.(*SubjectGraphReview); ok {
+			SetObjectDefaults_SubjectGraphReview(review)
+		}
+	})
 
 	return nil
 }
 
 func SetObjectDefaults_RoleGraphReview(in *RoleGraphReview) {
+	in.EnsureDefaults()
+}
+
+func SetObjectDefaults_SubjectPermissionsView(in *SubjectPermissionsView) {
+	in.EnsureDefaults()
+}
+
+func SetObjectDefaults_SubjectGraphReview(in *SubjectGraphReview) {
 	in.EnsureDefaults()
 }

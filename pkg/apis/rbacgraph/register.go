@@ -19,6 +19,8 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&RoleGraphReview{},
 		&NonResourceURLList{},
 		&RolePermissionsView{},
+		&SubjectPermissionsView{},
+		&SubjectGraphReview{},
 	)
 
 	return nil

@@ -114,6 +114,74 @@
           }
         }
       }
+    },
+    "/apis/rbacgraph.in-cloud.io/v1alpha1/subjectgraphreviews": {
+      "post": {
+        "description": "Query the RBAC graph rooted at a subject (ServiceAccount, User, or Group)",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "rbacgraph"
+        ],
+        "summary": "Query the RBAC graph rooted at a subject (ServiceAccount, User, or Group)",
+        "operationId": "createSubjectGraphReview",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1alpha1.SubjectGraphReview"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "$ref": "#/definitions/v1alpha1.SubjectGraphReview"
+            }
+          }
+        }
+      }
+    },
+    "/apis/rbacgraph.in-cloud.io/v1alpha1/subjectpermissionsviews": {
+      "post": {
+        "description": "Get aggregated permissions for a subject (ServiceAccount, User, or Group) across all bound roles",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "rbacgraph"
+        ],
+        "summary": "Get aggregated permissions for a subject (ServiceAccount, User, or Group) across all bound roles",
+        "operationId": "createSubjectPermissionsView",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1alpha1.SubjectPermissionsView"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "$ref": "#/definitions/v1alpha1.SubjectPermissionsView"
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -392,6 +460,71 @@
           "type": "integer",
           "format": "int32",
           "default": 0
+        }
+      }
+    },
+    "k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.AttributedGrant": {
+      "description": "AttributedGrant is one permission the subject holds, annotated with the role that defines it and the binding that brought the role into scope. Used only in SubjectPermissionsViewStatus.Grants; has no counterpart in role-centric responses where the source is implicit.",
+      "type": "object",
+      "required": [
+        "sourceRole",
+        "sourceBinding",
+        "verb"
+      ],
+      "properties": {
+        "apiGroup": {
+          "type": "string"
+        },
+        "nonResourceURL": {
+          "type": "string"
+        },
+        "resource": {
+          "type": "string"
+        },
+        "resourceNames": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "default": ""
+          }
+        },
+        "sourceBinding": {
+          "default": {},
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.BindingRef"
+        },
+        "sourceRole": {
+          "default": {},
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.RoleRef"
+        },
+        "verb": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    },
+    "k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.BindingRef": {
+      "description": "BindingRef identifies a RoleBinding or ClusterRoleBinding. Namespace is empty for ClusterRoleBinding.",
+      "type": "object",
+      "required": [
+        "kind",
+        "name"
+      ],
+      "properties": {
+        "kind": {
+          "description": "Possible enum values:\n - `\"ClusterRoleBinding\"`\n - `\"RoleBinding\"`",
+          "type": "string",
+          "default": "",
+          "enum": [
+            "ClusterRoleBinding",
+            "RoleBinding"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "default": ""
+        },
+        "namespace": {
+          "type": "string"
         }
       }
     },
@@ -1127,6 +1260,384 @@
           "items": {
             "type": "string",
             "default": ""
+          }
+        }
+      }
+    },
+    "k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.SubjectBinding": {
+      "type": "object",
+      "required": [
+        "kind",
+        "name",
+        "roleRef",
+        "effectiveScope",
+        "viaSubject"
+      ],
+      "properties": {
+        "broken": {
+          "type": "boolean"
+        },
+        "effectiveScope": {
+          "description": "Possible enum values:\n - `\"cluster\"`\n - `\"namespaced\"`",
+          "type": "string",
+          "default": "",
+          "enum": [
+            "cluster",
+            "namespaced"
+          ]
+        },
+        "kind": {
+          "description": "Possible enum values:\n - `\"ClusterRoleBinding\"`\n - `\"RoleBinding\"`",
+          "type": "string",
+          "default": "",
+          "enum": [
+            "ClusterRoleBinding",
+            "RoleBinding"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "default": ""
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "roleRef": {
+          "default": {},
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.RoleRef"
+        },
+        "viaSubject": {
+          "default": {},
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.SubjectRef"
+        }
+      }
+    },
+    "k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.SubjectGraphReview": {
+      "description": "SubjectGraphReview returns the RBAC graph (bindings, roles, rules) rooted at a subject. Same model as SubjectPermissionsView, projected as nodes+edges.",
+      "type": "object",
+      "required": [
+        "spec"
+      ],
+      "properties": {
+        "apiVersion": {
+          "description": "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
+          "type": "string"
+        },
+        "kind": {
+          "description": "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
+          "type": "string"
+        },
+        "metadata": {
+          "default": {},
+          "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.ObjectMeta"
+        },
+        "spec": {
+          "default": {},
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.SubjectGraphReviewSpec"
+        },
+        "status": {
+          "default": {},
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.SubjectGraphReviewStatus"
+        }
+      }
+    },
+    "k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.SubjectGraphReviewSpec": {
+      "type": "object",
+      "required": [
+        "subject"
+      ],
+      "properties": {
+        "directOnly": {
+          "type": "boolean"
+        },
+        "filterPhantomAPIs": {
+          "type": "boolean"
+        },
+        "matchMode": {
+          "description": "Possible enum values:\n - `\"all\"`\n - `\"any\"`",
+          "type": "string",
+          "enum": [
+            "all",
+            "any"
+          ]
+        },
+        "selector": {
+          "default": {},
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.Selector"
+        },
+        "subject": {
+          "default": {},
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.SubjectRef"
+        },
+        "wildcardMode": {
+          "description": "Possible enum values:\n - `\"exact\"`\n - `\"wildcard\"`",
+          "type": "string",
+          "enum": [
+            "exact",
+            "wildcard"
+          ]
+        }
+      }
+    },
+    "k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.SubjectGraphReviewStatus": {
+      "type": "object",
+      "required": [
+        "subject",
+        "matchedRoles",
+        "matchedBindings",
+        "graph"
+      ],
+      "properties": {
+        "graph": {
+          "default": {},
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.Graph"
+        },
+        "knownGaps": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "default": ""
+          }
+        },
+        "matchedBindings": {
+          "type": "integer",
+          "format": "int32",
+          "default": 0
+        },
+        "matchedRoles": {
+          "type": "integer",
+          "format": "int32",
+          "default": 0
+        },
+        "resolvedSubjects": {
+          "type": "array",
+          "items": {
+            "default": {},
+            "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.SubjectRef"
+          }
+        },
+        "subject": {
+          "default": {},
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.SubjectRef"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "default": {},
+            "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.SubjectWarning"
+          }
+        }
+      }
+    },
+    "k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.SubjectPermissionsView": {
+      "description": "SubjectPermissionsView returns the aggregated permissions of a subject (ServiceAccount, User, or Group) across all roles bound to it.",
+      "type": "object",
+      "required": [
+        "spec"
+      ],
+      "properties": {
+        "apiVersion": {
+          "description": "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
+          "type": "string"
+        },
+        "kind": {
+          "description": "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
+          "type": "string"
+        },
+        "metadata": {
+          "default": {},
+          "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.ObjectMeta"
+        },
+        "spec": {
+          "default": {},
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.SubjectPermissionsViewSpec"
+        },
+        "status": {
+          "default": {},
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.SubjectPermissionsViewStatus"
+        }
+      }
+    },
+    "k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.SubjectPermissionsViewSpec": {
+      "type": "object",
+      "required": [
+        "subject"
+      ],
+      "properties": {
+        "directOnly": {
+          "type": "boolean"
+        },
+        "filterPhantomAPIs": {
+          "type": "boolean"
+        },
+        "matchMode": {
+          "description": "Possible enum values:\n - `\"all\"`\n - `\"any\"`",
+          "type": "string",
+          "enum": [
+            "all",
+            "any"
+          ]
+        },
+        "selector": {
+          "default": {},
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.Selector"
+        },
+        "subject": {
+          "default": {},
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.SubjectRef"
+        },
+        "wildcardMode": {
+          "description": "Possible enum values:\n - `\"exact\"`\n - `\"wildcard\"`",
+          "type": "string",
+          "enum": [
+            "exact",
+            "wildcard"
+          ]
+        }
+      }
+    },
+    "k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.SubjectPermissionsViewStatus": {
+      "type": "object",
+      "required": [
+        "subject",
+        "apiGroups",
+        "grants",
+        "bindings",
+        "roles"
+      ],
+      "properties": {
+        "apiGroups": {
+          "type": "array",
+          "items": {
+            "default": {},
+            "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.APIGroupPermissions"
+          }
+        },
+        "bindings": {
+          "type": "array",
+          "items": {
+            "default": {},
+            "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.SubjectBinding"
+          }
+        },
+        "grants": {
+          "type": "array",
+          "items": {
+            "default": {},
+            "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.AttributedGrant"
+          }
+        },
+        "nonResourceUrls": {
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.NonResourceURLPermissions"
+        },
+        "resolvedSubjects": {
+          "type": "array",
+          "items": {
+            "default": {},
+            "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.SubjectRef"
+          }
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "default": {},
+            "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.SubjectRoleSummary"
+          }
+        },
+        "subject": {
+          "default": {},
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.SubjectRef"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "default": {},
+            "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.SubjectWarning"
+          }
+        }
+      }
+    },
+    "k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.SubjectRef": {
+      "description": "SubjectRef identifies an RBAC subject. Namespace is populated only for ServiceAccount.",
+      "type": "object",
+      "required": [
+        "kind",
+        "name"
+      ],
+      "properties": {
+        "kind": {
+          "description": "Possible enum values:\n - `\"Group\"`\n - `\"ServiceAccount\"`\n - `\"User\"`",
+          "type": "string",
+          "default": "",
+          "enum": [
+            "Group",
+            "ServiceAccount",
+            "User"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "default": ""
+        },
+        "namespace": {
+          "type": "string"
+        }
+      }
+    },
+    "k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.SubjectRoleSummary": {
+      "type": "object",
+      "required": [
+        "ref"
+      ],
+      "properties": {
+        "assessment": {
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.Assessment"
+        },
+        "phantom": {
+          "type": "boolean"
+        },
+        "ref": {
+          "default": {},
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.RoleRef"
+        }
+      }
+    },
+    "k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.SubjectWarning": {
+      "type": "object",
+      "required": [
+        "code",
+        "message"
+      ],
+      "properties": {
+        "binding": {
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.BindingRef"
+        },
+        "code": {
+          "description": "Possible enum values:\n - `\"BrokenBinding\"`\n - `\"ImpersonationCapable\"`\n - `\"LargeResponse\"`",
+          "type": "string",
+          "default": "",
+          "enum": [
+            "BrokenBinding",
+            "ImpersonationCapable",
+            "LargeResponse"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "default": ""
+        },
+        "roleCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "roleRef": {
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.RoleRef"
+        },
+        "subjects": {
+          "type": "array",
+          "items": {
+            "default": {},
+            "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.SubjectRef"
           }
         }
       }

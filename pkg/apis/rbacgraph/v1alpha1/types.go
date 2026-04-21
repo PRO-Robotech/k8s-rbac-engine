@@ -1,6 +1,7 @@
 package v1alpha1
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -405,3 +406,266 @@ func (GraphEdge) OpenAPIModelName() string      { return openAPIPrefix + "GraphE
 func (Assessment) OpenAPIModelName() string     { return openAPIPrefix + "Assessment" }
 func (RuleRef) OpenAPIModelName() string        { return openAPIPrefix + "RuleRef" }
 func (ResourceMapRow) OpenAPIModelName() string { return openAPIPrefix + "ResourceMapRow" }
+
+// ---------- SubjectPermissionsView / SubjectGraphReview types ----------
+// SYNC: Keep types/constants/methods in sync with pkg/apis/rbacgraph/types.go
+
+const (
+	SubjectPermissionsViewKind     = "SubjectPermissionsView"
+	SubjectPermissionsViewResource = "subjectpermissionsviews"
+	SubjectGraphReviewKind         = "SubjectGraphReview"
+	SubjectGraphReviewResource     = "subjectgraphreviews"
+)
+
+// +enum
+type SubjectKind string
+
+const (
+	SubjectKindServiceAccount SubjectKind = "ServiceAccount"
+	SubjectKindUser           SubjectKind = "User"
+	SubjectKindGroup          SubjectKind = "Group"
+)
+
+// +enum
+type BindingKind string
+
+const (
+	BindingKindRoleBinding        BindingKind = "RoleBinding"
+	BindingKindClusterRoleBinding BindingKind = "ClusterRoleBinding"
+)
+
+// +enum
+type EffectiveScope string
+
+const (
+	EffectiveScopeCluster    EffectiveScope = "cluster"
+	EffectiveScopeNamespaced EffectiveScope = "namespaced"
+)
+
+// +enum
+type SubjectWarningCode string
+
+const (
+	SubjectWarningCodeImpersonationCapable SubjectWarningCode = "ImpersonationCapable"
+	SubjectWarningCodeBrokenBinding        SubjectWarningCode = "BrokenBinding"
+	SubjectWarningCodeLargeResponse        SubjectWarningCode = "LargeResponse"
+)
+
+// SubjectRef identifies an RBAC subject. Namespace is populated only for ServiceAccount.
+type SubjectRef struct {
+	Kind      SubjectKind `json:"kind"`
+	Name      string      `json:"name"`
+	Namespace string      `json:"namespace,omitempty"`
+}
+
+// BindingRef identifies a RoleBinding or ClusterRoleBinding. Namespace is empty for ClusterRoleBinding.
+type BindingRef struct {
+	Kind      BindingKind `json:"kind"`
+	Name      string      `json:"name"`
+	Namespace string      `json:"namespace,omitempty"`
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// SubjectPermissionsView returns the aggregated permissions of a subject
+// (ServiceAccount, User, or Group) across all roles bound to it.
+type SubjectPermissionsView struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   SubjectPermissionsViewSpec   `json:"spec"`
+	Status SubjectPermissionsViewStatus `json:"status,omitempty"`
+}
+
+type SubjectPermissionsViewSpec struct {
+	Subject           SubjectRef   `json:"subject"`
+	Selector          Selector     `json:"selector,omitempty"`
+	MatchMode         MatchMode    `json:"matchMode,omitempty"`
+	WildcardMode      WildcardMode `json:"wildcardMode,omitempty"`
+	DirectOnly        bool         `json:"directOnly,omitempty"`
+	FilterPhantomAPIs bool         `json:"filterPhantomAPIs,omitempty"`
+}
+
+type SubjectPermissionsViewStatus struct {
+	Subject          SubjectRef                 `json:"subject"`
+	ResolvedSubjects []SubjectRef               `json:"resolvedSubjects,omitempty"`
+	APIGroups        []APIGroupPermissions      `json:"apiGroups"`
+	NonResourceURLs  *NonResourceURLPermissions `json:"nonResourceUrls,omitempty"`
+	Grants           []AttributedGrant          `json:"grants"`
+	Bindings         []SubjectBinding           `json:"bindings"`
+	Roles            []SubjectRoleSummary       `json:"roles"`
+	Warnings         []SubjectWarning           `json:"warnings,omitempty"`
+}
+
+type SubjectBinding struct {
+	Kind           BindingKind    `json:"kind"`
+	Name           string         `json:"name"`
+	Namespace      string         `json:"namespace,omitempty"`
+	RoleRef        RoleRef        `json:"roleRef"`
+	EffectiveScope EffectiveScope `json:"effectiveScope"`
+	ViaSubject     SubjectRef     `json:"viaSubject"`
+	Broken         bool           `json:"broken,omitempty"`
+}
+
+type SubjectRoleSummary struct {
+	Ref        RoleRef     `json:"ref"`
+	Assessment *Assessment `json:"assessment,omitempty"`
+	Phantom    bool        `json:"phantom,omitempty"`
+}
+
+// AttributedGrant is one permission the subject holds, annotated with the
+// role that defines it and the binding that brought the role into scope.
+// Used only in SubjectPermissionsViewStatus.Grants; has no counterpart in
+// role-centric responses where the source is implicit.
+type AttributedGrant struct {
+	SourceRole     RoleRef    `json:"sourceRole"`
+	SourceBinding  BindingRef `json:"sourceBinding"`
+	APIGroup       string     `json:"apiGroup,omitempty"`
+	Resource       string     `json:"resource,omitempty"`
+	Verb           string     `json:"verb"`
+	ResourceNames  []string   `json:"resourceNames,omitempty"`
+	NonResourceURL string     `json:"nonResourceURL,omitempty"`
+}
+
+type SubjectWarning struct {
+	Code      SubjectWarningCode `json:"code"`
+	Message   string             `json:"message"`
+	Subjects  []SubjectRef       `json:"subjects,omitempty"`
+	Binding   *BindingRef        `json:"binding,omitempty"`
+	RoleRef   *RoleRef           `json:"roleRef,omitempty"`
+	RoleCount int                `json:"roleCount,omitempty"`
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// SubjectGraphReview returns the RBAC graph (bindings, roles, rules) rooted
+// at a subject. Same model as SubjectPermissionsView, projected as nodes+edges.
+type SubjectGraphReview struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   SubjectGraphReviewSpec   `json:"spec"`
+	Status SubjectGraphReviewStatus `json:"status,omitempty"`
+}
+
+type SubjectGraphReviewSpec struct {
+	Subject           SubjectRef   `json:"subject"`
+	Selector          Selector     `json:"selector,omitempty"`
+	MatchMode         MatchMode    `json:"matchMode,omitempty"`
+	WildcardMode      WildcardMode `json:"wildcardMode,omitempty"`
+	DirectOnly        bool         `json:"directOnly,omitempty"`
+	FilterPhantomAPIs bool         `json:"filterPhantomAPIs,omitempty"`
+}
+
+type SubjectGraphReviewStatus struct {
+	Subject          SubjectRef       `json:"subject"`
+	ResolvedSubjects []SubjectRef     `json:"resolvedSubjects,omitempty"`
+	MatchedRoles     int              `json:"matchedRoles"`
+	MatchedBindings  int              `json:"matchedBindings"`
+	Graph            Graph            `json:"graph"`
+	Warnings         []SubjectWarning `json:"warnings,omitempty"`
+	KnownGaps        []string         `json:"knownGaps,omitempty"`
+}
+
+// ---------- subject spec methods ----------
+
+func (r *SubjectPermissionsView) EnsureDefaults() {
+	if strings.TrimSpace(r.APIVersion) == "" {
+		r.APIVersion = APIVersionValue
+	}
+	if strings.TrimSpace(r.Kind) == "" {
+		r.Kind = SubjectPermissionsViewKind
+	}
+	r.Spec.EnsureDefaults()
+}
+
+func (r *SubjectGraphReview) EnsureDefaults() {
+	if strings.TrimSpace(r.APIVersion) == "" {
+		r.APIVersion = APIVersionValue
+	}
+	if strings.TrimSpace(r.Kind) == "" {
+		r.Kind = SubjectGraphReviewKind
+	}
+	r.Spec.EnsureDefaults()
+}
+
+func (s *SubjectPermissionsViewSpec) EnsureDefaults() {
+	ensureSubjectSpecDefaults(&s.MatchMode, &s.WildcardMode)
+}
+
+func (s SubjectPermissionsViewSpec) Validate() error {
+	return validateSubjectSpec(s.Subject, s.MatchMode, s.WildcardMode)
+}
+
+func (s *SubjectGraphReviewSpec) EnsureDefaults() {
+	ensureSubjectSpecDefaults(&s.MatchMode, &s.WildcardMode)
+}
+
+func (s SubjectGraphReviewSpec) Validate() error {
+	return validateSubjectSpec(s.Subject, s.MatchMode, s.WildcardMode)
+}
+
+func ensureSubjectSpecDefaults(matchMode *MatchMode, wildcardMode *WildcardMode) {
+	if *matchMode == "" {
+		*matchMode = MatchModeAny
+	}
+	switch *wildcardMode {
+	case "":
+		*wildcardMode = WildcardModeWildcard
+	case "expand":
+		*wildcardMode = WildcardModeWildcard
+	}
+}
+
+func validateSubjectSpec(subject SubjectRef, matchMode MatchMode, wildcardMode WildcardMode) error {
+	if subject.Kind == "" {
+		return errors.New("subject.kind is required")
+	}
+	switch subject.Kind {
+	case SubjectKindServiceAccount, SubjectKindUser, SubjectKindGroup:
+	default:
+		return fmt.Errorf("invalid subject.kind %q", subject.Kind)
+	}
+	if subject.Name == "" {
+		return errors.New("subject.name is required")
+	}
+	if subject.Kind == SubjectKindServiceAccount && subject.Namespace == "" {
+		return errors.New("subject.namespace is required for ServiceAccount")
+	}
+	if subject.Kind != SubjectKindServiceAccount && subject.Namespace != "" {
+		return fmt.Errorf("subject.namespace must be empty for kind %q", subject.Kind)
+	}
+	if matchMode != MatchModeAny && matchMode != MatchModeAll {
+		return fmt.Errorf("invalid matchMode %q", matchMode)
+	}
+	if wildcardMode != WildcardModeWildcard && wildcardMode != WildcardModeExact {
+		return fmt.Errorf("invalid wildcardMode %q", wildcardMode)
+	}
+
+	return nil
+}
+
+func (SubjectPermissionsView) OpenAPIModelName() string {
+	return openAPIPrefix + "SubjectPermissionsView"
+}
+func (SubjectPermissionsViewSpec) OpenAPIModelName() string {
+	return openAPIPrefix + "SubjectPermissionsViewSpec"
+}
+func (SubjectPermissionsViewStatus) OpenAPIModelName() string {
+	return openAPIPrefix + "SubjectPermissionsViewStatus"
+}
+func (SubjectGraphReview) OpenAPIModelName() string {
+	return openAPIPrefix + "SubjectGraphReview"
+}
+func (SubjectGraphReviewSpec) OpenAPIModelName() string {
+	return openAPIPrefix + "SubjectGraphReviewSpec"
+}
+func (SubjectGraphReviewStatus) OpenAPIModelName() string {
+	return openAPIPrefix + "SubjectGraphReviewStatus"
+}
+func (SubjectRef) OpenAPIModelName() string         { return openAPIPrefix + "SubjectRef" }
+func (BindingRef) OpenAPIModelName() string         { return openAPIPrefix + "BindingRef" }
+func (SubjectBinding) OpenAPIModelName() string     { return openAPIPrefix + "SubjectBinding" }
+func (SubjectRoleSummary) OpenAPIModelName() string { return openAPIPrefix + "SubjectRoleSummary" }
+func (SubjectWarning) OpenAPIModelName() string     { return openAPIPrefix + "SubjectWarning" }
+func (AttributedGrant) OpenAPIModelName() string    { return openAPIPrefix + "AttributedGrant" }

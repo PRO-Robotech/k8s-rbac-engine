@@ -56,6 +56,26 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}); err != nil {
 		return err
 	}
+	if err := s.AddGeneratedConversionFunc((*AttributedGrant)(nil), (*rbacgraph.AttributedGrant)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_AttributedGrant_To_rbacgraph_AttributedGrant(a.(*AttributedGrant), b.(*rbacgraph.AttributedGrant), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*rbacgraph.AttributedGrant)(nil), (*AttributedGrant)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_rbacgraph_AttributedGrant_To_v1alpha1_AttributedGrant(a.(*rbacgraph.AttributedGrant), b.(*AttributedGrant), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*BindingRef)(nil), (*rbacgraph.BindingRef)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_BindingRef_To_rbacgraph_BindingRef(a.(*BindingRef), b.(*rbacgraph.BindingRef), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*rbacgraph.BindingRef)(nil), (*BindingRef)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_rbacgraph_BindingRef_To_v1alpha1_BindingRef(a.(*rbacgraph.BindingRef), b.(*BindingRef), scope)
+	}); err != nil {
+		return err
+	}
 	if err := s.AddGeneratedConversionFunc((*GrantingRule)(nil), (*rbacgraph.GrantingRule)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_v1alpha1_GrantingRule_To_rbacgraph_GrantingRule(a.(*GrantingRule), b.(*rbacgraph.GrantingRule), scope)
 	}); err != nil {
@@ -256,6 +276,106 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}); err != nil {
 		return err
 	}
+	if err := s.AddGeneratedConversionFunc((*SubjectBinding)(nil), (*rbacgraph.SubjectBinding)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_SubjectBinding_To_rbacgraph_SubjectBinding(a.(*SubjectBinding), b.(*rbacgraph.SubjectBinding), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*rbacgraph.SubjectBinding)(nil), (*SubjectBinding)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_rbacgraph_SubjectBinding_To_v1alpha1_SubjectBinding(a.(*rbacgraph.SubjectBinding), b.(*SubjectBinding), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*SubjectGraphReview)(nil), (*rbacgraph.SubjectGraphReview)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_SubjectGraphReview_To_rbacgraph_SubjectGraphReview(a.(*SubjectGraphReview), b.(*rbacgraph.SubjectGraphReview), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*rbacgraph.SubjectGraphReview)(nil), (*SubjectGraphReview)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_rbacgraph_SubjectGraphReview_To_v1alpha1_SubjectGraphReview(a.(*rbacgraph.SubjectGraphReview), b.(*SubjectGraphReview), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*SubjectGraphReviewSpec)(nil), (*rbacgraph.SubjectGraphReviewSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_SubjectGraphReviewSpec_To_rbacgraph_SubjectGraphReviewSpec(a.(*SubjectGraphReviewSpec), b.(*rbacgraph.SubjectGraphReviewSpec), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*rbacgraph.SubjectGraphReviewSpec)(nil), (*SubjectGraphReviewSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_rbacgraph_SubjectGraphReviewSpec_To_v1alpha1_SubjectGraphReviewSpec(a.(*rbacgraph.SubjectGraphReviewSpec), b.(*SubjectGraphReviewSpec), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*SubjectGraphReviewStatus)(nil), (*rbacgraph.SubjectGraphReviewStatus)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_SubjectGraphReviewStatus_To_rbacgraph_SubjectGraphReviewStatus(a.(*SubjectGraphReviewStatus), b.(*rbacgraph.SubjectGraphReviewStatus), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*rbacgraph.SubjectGraphReviewStatus)(nil), (*SubjectGraphReviewStatus)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_rbacgraph_SubjectGraphReviewStatus_To_v1alpha1_SubjectGraphReviewStatus(a.(*rbacgraph.SubjectGraphReviewStatus), b.(*SubjectGraphReviewStatus), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*SubjectPermissionsView)(nil), (*rbacgraph.SubjectPermissionsView)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_SubjectPermissionsView_To_rbacgraph_SubjectPermissionsView(a.(*SubjectPermissionsView), b.(*rbacgraph.SubjectPermissionsView), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*rbacgraph.SubjectPermissionsView)(nil), (*SubjectPermissionsView)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_rbacgraph_SubjectPermissionsView_To_v1alpha1_SubjectPermissionsView(a.(*rbacgraph.SubjectPermissionsView), b.(*SubjectPermissionsView), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*SubjectPermissionsViewSpec)(nil), (*rbacgraph.SubjectPermissionsViewSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_SubjectPermissionsViewSpec_To_rbacgraph_SubjectPermissionsViewSpec(a.(*SubjectPermissionsViewSpec), b.(*rbacgraph.SubjectPermissionsViewSpec), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*rbacgraph.SubjectPermissionsViewSpec)(nil), (*SubjectPermissionsViewSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_rbacgraph_SubjectPermissionsViewSpec_To_v1alpha1_SubjectPermissionsViewSpec(a.(*rbacgraph.SubjectPermissionsViewSpec), b.(*SubjectPermissionsViewSpec), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*SubjectPermissionsViewStatus)(nil), (*rbacgraph.SubjectPermissionsViewStatus)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_SubjectPermissionsViewStatus_To_rbacgraph_SubjectPermissionsViewStatus(a.(*SubjectPermissionsViewStatus), b.(*rbacgraph.SubjectPermissionsViewStatus), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*rbacgraph.SubjectPermissionsViewStatus)(nil), (*SubjectPermissionsViewStatus)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_rbacgraph_SubjectPermissionsViewStatus_To_v1alpha1_SubjectPermissionsViewStatus(a.(*rbacgraph.SubjectPermissionsViewStatus), b.(*SubjectPermissionsViewStatus), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*SubjectRef)(nil), (*rbacgraph.SubjectRef)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_SubjectRef_To_rbacgraph_SubjectRef(a.(*SubjectRef), b.(*rbacgraph.SubjectRef), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*rbacgraph.SubjectRef)(nil), (*SubjectRef)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_rbacgraph_SubjectRef_To_v1alpha1_SubjectRef(a.(*rbacgraph.SubjectRef), b.(*SubjectRef), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*SubjectRoleSummary)(nil), (*rbacgraph.SubjectRoleSummary)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_SubjectRoleSummary_To_rbacgraph_SubjectRoleSummary(a.(*SubjectRoleSummary), b.(*rbacgraph.SubjectRoleSummary), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*rbacgraph.SubjectRoleSummary)(nil), (*SubjectRoleSummary)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_rbacgraph_SubjectRoleSummary_To_v1alpha1_SubjectRoleSummary(a.(*rbacgraph.SubjectRoleSummary), b.(*SubjectRoleSummary), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*SubjectWarning)(nil), (*rbacgraph.SubjectWarning)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_SubjectWarning_To_rbacgraph_SubjectWarning(a.(*SubjectWarning), b.(*rbacgraph.SubjectWarning), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*rbacgraph.SubjectWarning)(nil), (*SubjectWarning)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_rbacgraph_SubjectWarning_To_v1alpha1_SubjectWarning(a.(*rbacgraph.SubjectWarning), b.(*SubjectWarning), scope)
+	}); err != nil {
+		return err
+	}
 	if err := s.AddGeneratedConversionFunc((*VerbPermission)(nil), (*rbacgraph.VerbPermission)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_v1alpha1_VerbPermission_To_rbacgraph_VerbPermission(a.(*VerbPermission), b.(*rbacgraph.VerbPermission), scope)
 	}); err != nil {
@@ -323,6 +443,70 @@ func autoConvert_rbacgraph_Assessment_To_v1alpha1_Assessment(in *rbacgraph.Asses
 // Convert_rbacgraph_Assessment_To_v1alpha1_Assessment is an autogenerated conversion function.
 func Convert_rbacgraph_Assessment_To_v1alpha1_Assessment(in *rbacgraph.Assessment, out *Assessment, s conversion.Scope) error {
 	return autoConvert_rbacgraph_Assessment_To_v1alpha1_Assessment(in, out, s)
+}
+
+func autoConvert_v1alpha1_AttributedGrant_To_rbacgraph_AttributedGrant(in *AttributedGrant, out *rbacgraph.AttributedGrant, s conversion.Scope) error {
+	if err := Convert_v1alpha1_RoleRef_To_rbacgraph_RoleRef(&in.SourceRole, &out.SourceRole, s); err != nil {
+		return err
+	}
+	if err := Convert_v1alpha1_BindingRef_To_rbacgraph_BindingRef(&in.SourceBinding, &out.SourceBinding, s); err != nil {
+		return err
+	}
+	out.APIGroup = in.APIGroup
+	out.Resource = in.Resource
+	out.Verb = in.Verb
+	out.ResourceNames = *(*[]string)(unsafe.Pointer(&in.ResourceNames))
+	out.NonResourceURL = in.NonResourceURL
+	return nil
+}
+
+// Convert_v1alpha1_AttributedGrant_To_rbacgraph_AttributedGrant is an autogenerated conversion function.
+func Convert_v1alpha1_AttributedGrant_To_rbacgraph_AttributedGrant(in *AttributedGrant, out *rbacgraph.AttributedGrant, s conversion.Scope) error {
+	return autoConvert_v1alpha1_AttributedGrant_To_rbacgraph_AttributedGrant(in, out, s)
+}
+
+func autoConvert_rbacgraph_AttributedGrant_To_v1alpha1_AttributedGrant(in *rbacgraph.AttributedGrant, out *AttributedGrant, s conversion.Scope) error {
+	if err := Convert_rbacgraph_RoleRef_To_v1alpha1_RoleRef(&in.SourceRole, &out.SourceRole, s); err != nil {
+		return err
+	}
+	if err := Convert_rbacgraph_BindingRef_To_v1alpha1_BindingRef(&in.SourceBinding, &out.SourceBinding, s); err != nil {
+		return err
+	}
+	out.APIGroup = in.APIGroup
+	out.Resource = in.Resource
+	out.Verb = in.Verb
+	out.ResourceNames = *(*[]string)(unsafe.Pointer(&in.ResourceNames))
+	out.NonResourceURL = in.NonResourceURL
+	return nil
+}
+
+// Convert_rbacgraph_AttributedGrant_To_v1alpha1_AttributedGrant is an autogenerated conversion function.
+func Convert_rbacgraph_AttributedGrant_To_v1alpha1_AttributedGrant(in *rbacgraph.AttributedGrant, out *AttributedGrant, s conversion.Scope) error {
+	return autoConvert_rbacgraph_AttributedGrant_To_v1alpha1_AttributedGrant(in, out, s)
+}
+
+func autoConvert_v1alpha1_BindingRef_To_rbacgraph_BindingRef(in *BindingRef, out *rbacgraph.BindingRef, s conversion.Scope) error {
+	out.Kind = rbacgraph.BindingKind(in.Kind)
+	out.Name = in.Name
+	out.Namespace = in.Namespace
+	return nil
+}
+
+// Convert_v1alpha1_BindingRef_To_rbacgraph_BindingRef is an autogenerated conversion function.
+func Convert_v1alpha1_BindingRef_To_rbacgraph_BindingRef(in *BindingRef, out *rbacgraph.BindingRef, s conversion.Scope) error {
+	return autoConvert_v1alpha1_BindingRef_To_rbacgraph_BindingRef(in, out, s)
+}
+
+func autoConvert_rbacgraph_BindingRef_To_v1alpha1_BindingRef(in *rbacgraph.BindingRef, out *BindingRef, s conversion.Scope) error {
+	out.Kind = BindingKind(in.Kind)
+	out.Name = in.Name
+	out.Namespace = in.Namespace
+	return nil
+}
+
+// Convert_rbacgraph_BindingRef_To_v1alpha1_BindingRef is an autogenerated conversion function.
+func Convert_rbacgraph_BindingRef_To_v1alpha1_BindingRef(in *rbacgraph.BindingRef, out *BindingRef, s conversion.Scope) error {
+	return autoConvert_rbacgraph_BindingRef_To_v1alpha1_BindingRef(in, out, s)
 }
 
 func autoConvert_v1alpha1_GrantingRule_To_rbacgraph_GrantingRule(in *GrantingRule, out *rbacgraph.GrantingRule, s conversion.Scope) error {
@@ -927,6 +1111,346 @@ func autoConvert_rbacgraph_Selector_To_v1alpha1_Selector(in *rbacgraph.Selector,
 // Convert_rbacgraph_Selector_To_v1alpha1_Selector is an autogenerated conversion function.
 func Convert_rbacgraph_Selector_To_v1alpha1_Selector(in *rbacgraph.Selector, out *Selector, s conversion.Scope) error {
 	return autoConvert_rbacgraph_Selector_To_v1alpha1_Selector(in, out, s)
+}
+
+func autoConvert_v1alpha1_SubjectBinding_To_rbacgraph_SubjectBinding(in *SubjectBinding, out *rbacgraph.SubjectBinding, s conversion.Scope) error {
+	out.Kind = rbacgraph.BindingKind(in.Kind)
+	out.Name = in.Name
+	out.Namespace = in.Namespace
+	if err := Convert_v1alpha1_RoleRef_To_rbacgraph_RoleRef(&in.RoleRef, &out.RoleRef, s); err != nil {
+		return err
+	}
+	out.EffectiveScope = rbacgraph.EffectiveScope(in.EffectiveScope)
+	if err := Convert_v1alpha1_SubjectRef_To_rbacgraph_SubjectRef(&in.ViaSubject, &out.ViaSubject, s); err != nil {
+		return err
+	}
+	out.Broken = in.Broken
+	return nil
+}
+
+// Convert_v1alpha1_SubjectBinding_To_rbacgraph_SubjectBinding is an autogenerated conversion function.
+func Convert_v1alpha1_SubjectBinding_To_rbacgraph_SubjectBinding(in *SubjectBinding, out *rbacgraph.SubjectBinding, s conversion.Scope) error {
+	return autoConvert_v1alpha1_SubjectBinding_To_rbacgraph_SubjectBinding(in, out, s)
+}
+
+func autoConvert_rbacgraph_SubjectBinding_To_v1alpha1_SubjectBinding(in *rbacgraph.SubjectBinding, out *SubjectBinding, s conversion.Scope) error {
+	out.Kind = BindingKind(in.Kind)
+	out.Name = in.Name
+	out.Namespace = in.Namespace
+	if err := Convert_rbacgraph_RoleRef_To_v1alpha1_RoleRef(&in.RoleRef, &out.RoleRef, s); err != nil {
+		return err
+	}
+	out.EffectiveScope = EffectiveScope(in.EffectiveScope)
+	if err := Convert_rbacgraph_SubjectRef_To_v1alpha1_SubjectRef(&in.ViaSubject, &out.ViaSubject, s); err != nil {
+		return err
+	}
+	out.Broken = in.Broken
+	return nil
+}
+
+// Convert_rbacgraph_SubjectBinding_To_v1alpha1_SubjectBinding is an autogenerated conversion function.
+func Convert_rbacgraph_SubjectBinding_To_v1alpha1_SubjectBinding(in *rbacgraph.SubjectBinding, out *SubjectBinding, s conversion.Scope) error {
+	return autoConvert_rbacgraph_SubjectBinding_To_v1alpha1_SubjectBinding(in, out, s)
+}
+
+func autoConvert_v1alpha1_SubjectGraphReview_To_rbacgraph_SubjectGraphReview(in *SubjectGraphReview, out *rbacgraph.SubjectGraphReview, s conversion.Scope) error {
+	out.ObjectMeta = in.ObjectMeta
+	if err := Convert_v1alpha1_SubjectGraphReviewSpec_To_rbacgraph_SubjectGraphReviewSpec(&in.Spec, &out.Spec, s); err != nil {
+		return err
+	}
+	if err := Convert_v1alpha1_SubjectGraphReviewStatus_To_rbacgraph_SubjectGraphReviewStatus(&in.Status, &out.Status, s); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Convert_v1alpha1_SubjectGraphReview_To_rbacgraph_SubjectGraphReview is an autogenerated conversion function.
+func Convert_v1alpha1_SubjectGraphReview_To_rbacgraph_SubjectGraphReview(in *SubjectGraphReview, out *rbacgraph.SubjectGraphReview, s conversion.Scope) error {
+	return autoConvert_v1alpha1_SubjectGraphReview_To_rbacgraph_SubjectGraphReview(in, out, s)
+}
+
+func autoConvert_rbacgraph_SubjectGraphReview_To_v1alpha1_SubjectGraphReview(in *rbacgraph.SubjectGraphReview, out *SubjectGraphReview, s conversion.Scope) error {
+	out.ObjectMeta = in.ObjectMeta
+	if err := Convert_rbacgraph_SubjectGraphReviewSpec_To_v1alpha1_SubjectGraphReviewSpec(&in.Spec, &out.Spec, s); err != nil {
+		return err
+	}
+	if err := Convert_rbacgraph_SubjectGraphReviewStatus_To_v1alpha1_SubjectGraphReviewStatus(&in.Status, &out.Status, s); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Convert_rbacgraph_SubjectGraphReview_To_v1alpha1_SubjectGraphReview is an autogenerated conversion function.
+func Convert_rbacgraph_SubjectGraphReview_To_v1alpha1_SubjectGraphReview(in *rbacgraph.SubjectGraphReview, out *SubjectGraphReview, s conversion.Scope) error {
+	return autoConvert_rbacgraph_SubjectGraphReview_To_v1alpha1_SubjectGraphReview(in, out, s)
+}
+
+func autoConvert_v1alpha1_SubjectGraphReviewSpec_To_rbacgraph_SubjectGraphReviewSpec(in *SubjectGraphReviewSpec, out *rbacgraph.SubjectGraphReviewSpec, s conversion.Scope) error {
+	if err := Convert_v1alpha1_SubjectRef_To_rbacgraph_SubjectRef(&in.Subject, &out.Subject, s); err != nil {
+		return err
+	}
+	if err := Convert_v1alpha1_Selector_To_rbacgraph_Selector(&in.Selector, &out.Selector, s); err != nil {
+		return err
+	}
+	out.MatchMode = rbacgraph.MatchMode(in.MatchMode)
+	out.WildcardMode = rbacgraph.WildcardMode(in.WildcardMode)
+	out.DirectOnly = in.DirectOnly
+	out.FilterPhantomAPIs = in.FilterPhantomAPIs
+	return nil
+}
+
+// Convert_v1alpha1_SubjectGraphReviewSpec_To_rbacgraph_SubjectGraphReviewSpec is an autogenerated conversion function.
+func Convert_v1alpha1_SubjectGraphReviewSpec_To_rbacgraph_SubjectGraphReviewSpec(in *SubjectGraphReviewSpec, out *rbacgraph.SubjectGraphReviewSpec, s conversion.Scope) error {
+	return autoConvert_v1alpha1_SubjectGraphReviewSpec_To_rbacgraph_SubjectGraphReviewSpec(in, out, s)
+}
+
+func autoConvert_rbacgraph_SubjectGraphReviewSpec_To_v1alpha1_SubjectGraphReviewSpec(in *rbacgraph.SubjectGraphReviewSpec, out *SubjectGraphReviewSpec, s conversion.Scope) error {
+	if err := Convert_rbacgraph_SubjectRef_To_v1alpha1_SubjectRef(&in.Subject, &out.Subject, s); err != nil {
+		return err
+	}
+	if err := Convert_rbacgraph_Selector_To_v1alpha1_Selector(&in.Selector, &out.Selector, s); err != nil {
+		return err
+	}
+	out.MatchMode = MatchMode(in.MatchMode)
+	out.WildcardMode = WildcardMode(in.WildcardMode)
+	out.DirectOnly = in.DirectOnly
+	out.FilterPhantomAPIs = in.FilterPhantomAPIs
+	return nil
+}
+
+// Convert_rbacgraph_SubjectGraphReviewSpec_To_v1alpha1_SubjectGraphReviewSpec is an autogenerated conversion function.
+func Convert_rbacgraph_SubjectGraphReviewSpec_To_v1alpha1_SubjectGraphReviewSpec(in *rbacgraph.SubjectGraphReviewSpec, out *SubjectGraphReviewSpec, s conversion.Scope) error {
+	return autoConvert_rbacgraph_SubjectGraphReviewSpec_To_v1alpha1_SubjectGraphReviewSpec(in, out, s)
+}
+
+func autoConvert_v1alpha1_SubjectGraphReviewStatus_To_rbacgraph_SubjectGraphReviewStatus(in *SubjectGraphReviewStatus, out *rbacgraph.SubjectGraphReviewStatus, s conversion.Scope) error {
+	if err := Convert_v1alpha1_SubjectRef_To_rbacgraph_SubjectRef(&in.Subject, &out.Subject, s); err != nil {
+		return err
+	}
+	out.ResolvedSubjects = *(*[]rbacgraph.SubjectRef)(unsafe.Pointer(&in.ResolvedSubjects))
+	out.MatchedRoles = in.MatchedRoles
+	out.MatchedBindings = in.MatchedBindings
+	if err := Convert_v1alpha1_Graph_To_rbacgraph_Graph(&in.Graph, &out.Graph, s); err != nil {
+		return err
+	}
+	out.Warnings = *(*[]rbacgraph.SubjectWarning)(unsafe.Pointer(&in.Warnings))
+	out.KnownGaps = *(*[]string)(unsafe.Pointer(&in.KnownGaps))
+	return nil
+}
+
+// Convert_v1alpha1_SubjectGraphReviewStatus_To_rbacgraph_SubjectGraphReviewStatus is an autogenerated conversion function.
+func Convert_v1alpha1_SubjectGraphReviewStatus_To_rbacgraph_SubjectGraphReviewStatus(in *SubjectGraphReviewStatus, out *rbacgraph.SubjectGraphReviewStatus, s conversion.Scope) error {
+	return autoConvert_v1alpha1_SubjectGraphReviewStatus_To_rbacgraph_SubjectGraphReviewStatus(in, out, s)
+}
+
+func autoConvert_rbacgraph_SubjectGraphReviewStatus_To_v1alpha1_SubjectGraphReviewStatus(in *rbacgraph.SubjectGraphReviewStatus, out *SubjectGraphReviewStatus, s conversion.Scope) error {
+	if err := Convert_rbacgraph_SubjectRef_To_v1alpha1_SubjectRef(&in.Subject, &out.Subject, s); err != nil {
+		return err
+	}
+	out.ResolvedSubjects = *(*[]SubjectRef)(unsafe.Pointer(&in.ResolvedSubjects))
+	out.MatchedRoles = in.MatchedRoles
+	out.MatchedBindings = in.MatchedBindings
+	if err := Convert_rbacgraph_Graph_To_v1alpha1_Graph(&in.Graph, &out.Graph, s); err != nil {
+		return err
+	}
+	out.Warnings = *(*[]SubjectWarning)(unsafe.Pointer(&in.Warnings))
+	out.KnownGaps = *(*[]string)(unsafe.Pointer(&in.KnownGaps))
+	return nil
+}
+
+// Convert_rbacgraph_SubjectGraphReviewStatus_To_v1alpha1_SubjectGraphReviewStatus is an autogenerated conversion function.
+func Convert_rbacgraph_SubjectGraphReviewStatus_To_v1alpha1_SubjectGraphReviewStatus(in *rbacgraph.SubjectGraphReviewStatus, out *SubjectGraphReviewStatus, s conversion.Scope) error {
+	return autoConvert_rbacgraph_SubjectGraphReviewStatus_To_v1alpha1_SubjectGraphReviewStatus(in, out, s)
+}
+
+func autoConvert_v1alpha1_SubjectPermissionsView_To_rbacgraph_SubjectPermissionsView(in *SubjectPermissionsView, out *rbacgraph.SubjectPermissionsView, s conversion.Scope) error {
+	out.ObjectMeta = in.ObjectMeta
+	if err := Convert_v1alpha1_SubjectPermissionsViewSpec_To_rbacgraph_SubjectPermissionsViewSpec(&in.Spec, &out.Spec, s); err != nil {
+		return err
+	}
+	if err := Convert_v1alpha1_SubjectPermissionsViewStatus_To_rbacgraph_SubjectPermissionsViewStatus(&in.Status, &out.Status, s); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Convert_v1alpha1_SubjectPermissionsView_To_rbacgraph_SubjectPermissionsView is an autogenerated conversion function.
+func Convert_v1alpha1_SubjectPermissionsView_To_rbacgraph_SubjectPermissionsView(in *SubjectPermissionsView, out *rbacgraph.SubjectPermissionsView, s conversion.Scope) error {
+	return autoConvert_v1alpha1_SubjectPermissionsView_To_rbacgraph_SubjectPermissionsView(in, out, s)
+}
+
+func autoConvert_rbacgraph_SubjectPermissionsView_To_v1alpha1_SubjectPermissionsView(in *rbacgraph.SubjectPermissionsView, out *SubjectPermissionsView, s conversion.Scope) error {
+	out.ObjectMeta = in.ObjectMeta
+	if err := Convert_rbacgraph_SubjectPermissionsViewSpec_To_v1alpha1_SubjectPermissionsViewSpec(&in.Spec, &out.Spec, s); err != nil {
+		return err
+	}
+	if err := Convert_rbacgraph_SubjectPermissionsViewStatus_To_v1alpha1_SubjectPermissionsViewStatus(&in.Status, &out.Status, s); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Convert_rbacgraph_SubjectPermissionsView_To_v1alpha1_SubjectPermissionsView is an autogenerated conversion function.
+func Convert_rbacgraph_SubjectPermissionsView_To_v1alpha1_SubjectPermissionsView(in *rbacgraph.SubjectPermissionsView, out *SubjectPermissionsView, s conversion.Scope) error {
+	return autoConvert_rbacgraph_SubjectPermissionsView_To_v1alpha1_SubjectPermissionsView(in, out, s)
+}
+
+func autoConvert_v1alpha1_SubjectPermissionsViewSpec_To_rbacgraph_SubjectPermissionsViewSpec(in *SubjectPermissionsViewSpec, out *rbacgraph.SubjectPermissionsViewSpec, s conversion.Scope) error {
+	if err := Convert_v1alpha1_SubjectRef_To_rbacgraph_SubjectRef(&in.Subject, &out.Subject, s); err != nil {
+		return err
+	}
+	if err := Convert_v1alpha1_Selector_To_rbacgraph_Selector(&in.Selector, &out.Selector, s); err != nil {
+		return err
+	}
+	out.MatchMode = rbacgraph.MatchMode(in.MatchMode)
+	out.WildcardMode = rbacgraph.WildcardMode(in.WildcardMode)
+	out.DirectOnly = in.DirectOnly
+	out.FilterPhantomAPIs = in.FilterPhantomAPIs
+	return nil
+}
+
+// Convert_v1alpha1_SubjectPermissionsViewSpec_To_rbacgraph_SubjectPermissionsViewSpec is an autogenerated conversion function.
+func Convert_v1alpha1_SubjectPermissionsViewSpec_To_rbacgraph_SubjectPermissionsViewSpec(in *SubjectPermissionsViewSpec, out *rbacgraph.SubjectPermissionsViewSpec, s conversion.Scope) error {
+	return autoConvert_v1alpha1_SubjectPermissionsViewSpec_To_rbacgraph_SubjectPermissionsViewSpec(in, out, s)
+}
+
+func autoConvert_rbacgraph_SubjectPermissionsViewSpec_To_v1alpha1_SubjectPermissionsViewSpec(in *rbacgraph.SubjectPermissionsViewSpec, out *SubjectPermissionsViewSpec, s conversion.Scope) error {
+	if err := Convert_rbacgraph_SubjectRef_To_v1alpha1_SubjectRef(&in.Subject, &out.Subject, s); err != nil {
+		return err
+	}
+	if err := Convert_rbacgraph_Selector_To_v1alpha1_Selector(&in.Selector, &out.Selector, s); err != nil {
+		return err
+	}
+	out.MatchMode = MatchMode(in.MatchMode)
+	out.WildcardMode = WildcardMode(in.WildcardMode)
+	out.DirectOnly = in.DirectOnly
+	out.FilterPhantomAPIs = in.FilterPhantomAPIs
+	return nil
+}
+
+// Convert_rbacgraph_SubjectPermissionsViewSpec_To_v1alpha1_SubjectPermissionsViewSpec is an autogenerated conversion function.
+func Convert_rbacgraph_SubjectPermissionsViewSpec_To_v1alpha1_SubjectPermissionsViewSpec(in *rbacgraph.SubjectPermissionsViewSpec, out *SubjectPermissionsViewSpec, s conversion.Scope) error {
+	return autoConvert_rbacgraph_SubjectPermissionsViewSpec_To_v1alpha1_SubjectPermissionsViewSpec(in, out, s)
+}
+
+func autoConvert_v1alpha1_SubjectPermissionsViewStatus_To_rbacgraph_SubjectPermissionsViewStatus(in *SubjectPermissionsViewStatus, out *rbacgraph.SubjectPermissionsViewStatus, s conversion.Scope) error {
+	if err := Convert_v1alpha1_SubjectRef_To_rbacgraph_SubjectRef(&in.Subject, &out.Subject, s); err != nil {
+		return err
+	}
+	out.ResolvedSubjects = *(*[]rbacgraph.SubjectRef)(unsafe.Pointer(&in.ResolvedSubjects))
+	out.APIGroups = *(*[]rbacgraph.APIGroupPermissions)(unsafe.Pointer(&in.APIGroups))
+	out.NonResourceURLs = (*rbacgraph.NonResourceURLPermissions)(unsafe.Pointer(in.NonResourceURLs))
+	out.Grants = *(*[]rbacgraph.AttributedGrant)(unsafe.Pointer(&in.Grants))
+	out.Bindings = *(*[]rbacgraph.SubjectBinding)(unsafe.Pointer(&in.Bindings))
+	out.Roles = *(*[]rbacgraph.SubjectRoleSummary)(unsafe.Pointer(&in.Roles))
+	out.Warnings = *(*[]rbacgraph.SubjectWarning)(unsafe.Pointer(&in.Warnings))
+	return nil
+}
+
+// Convert_v1alpha1_SubjectPermissionsViewStatus_To_rbacgraph_SubjectPermissionsViewStatus is an autogenerated conversion function.
+func Convert_v1alpha1_SubjectPermissionsViewStatus_To_rbacgraph_SubjectPermissionsViewStatus(in *SubjectPermissionsViewStatus, out *rbacgraph.SubjectPermissionsViewStatus, s conversion.Scope) error {
+	return autoConvert_v1alpha1_SubjectPermissionsViewStatus_To_rbacgraph_SubjectPermissionsViewStatus(in, out, s)
+}
+
+func autoConvert_rbacgraph_SubjectPermissionsViewStatus_To_v1alpha1_SubjectPermissionsViewStatus(in *rbacgraph.SubjectPermissionsViewStatus, out *SubjectPermissionsViewStatus, s conversion.Scope) error {
+	if err := Convert_rbacgraph_SubjectRef_To_v1alpha1_SubjectRef(&in.Subject, &out.Subject, s); err != nil {
+		return err
+	}
+	out.ResolvedSubjects = *(*[]SubjectRef)(unsafe.Pointer(&in.ResolvedSubjects))
+	out.APIGroups = *(*[]APIGroupPermissions)(unsafe.Pointer(&in.APIGroups))
+	out.NonResourceURLs = (*NonResourceURLPermissions)(unsafe.Pointer(in.NonResourceURLs))
+	out.Grants = *(*[]AttributedGrant)(unsafe.Pointer(&in.Grants))
+	out.Bindings = *(*[]SubjectBinding)(unsafe.Pointer(&in.Bindings))
+	out.Roles = *(*[]SubjectRoleSummary)(unsafe.Pointer(&in.Roles))
+	out.Warnings = *(*[]SubjectWarning)(unsafe.Pointer(&in.Warnings))
+	return nil
+}
+
+// Convert_rbacgraph_SubjectPermissionsViewStatus_To_v1alpha1_SubjectPermissionsViewStatus is an autogenerated conversion function.
+func Convert_rbacgraph_SubjectPermissionsViewStatus_To_v1alpha1_SubjectPermissionsViewStatus(in *rbacgraph.SubjectPermissionsViewStatus, out *SubjectPermissionsViewStatus, s conversion.Scope) error {
+	return autoConvert_rbacgraph_SubjectPermissionsViewStatus_To_v1alpha1_SubjectPermissionsViewStatus(in, out, s)
+}
+
+func autoConvert_v1alpha1_SubjectRef_To_rbacgraph_SubjectRef(in *SubjectRef, out *rbacgraph.SubjectRef, s conversion.Scope) error {
+	out.Kind = rbacgraph.SubjectKind(in.Kind)
+	out.Name = in.Name
+	out.Namespace = in.Namespace
+	return nil
+}
+
+// Convert_v1alpha1_SubjectRef_To_rbacgraph_SubjectRef is an autogenerated conversion function.
+func Convert_v1alpha1_SubjectRef_To_rbacgraph_SubjectRef(in *SubjectRef, out *rbacgraph.SubjectRef, s conversion.Scope) error {
+	return autoConvert_v1alpha1_SubjectRef_To_rbacgraph_SubjectRef(in, out, s)
+}
+
+func autoConvert_rbacgraph_SubjectRef_To_v1alpha1_SubjectRef(in *rbacgraph.SubjectRef, out *SubjectRef, s conversion.Scope) error {
+	out.Kind = SubjectKind(in.Kind)
+	out.Name = in.Name
+	out.Namespace = in.Namespace
+	return nil
+}
+
+// Convert_rbacgraph_SubjectRef_To_v1alpha1_SubjectRef is an autogenerated conversion function.
+func Convert_rbacgraph_SubjectRef_To_v1alpha1_SubjectRef(in *rbacgraph.SubjectRef, out *SubjectRef, s conversion.Scope) error {
+	return autoConvert_rbacgraph_SubjectRef_To_v1alpha1_SubjectRef(in, out, s)
+}
+
+func autoConvert_v1alpha1_SubjectRoleSummary_To_rbacgraph_SubjectRoleSummary(in *SubjectRoleSummary, out *rbacgraph.SubjectRoleSummary, s conversion.Scope) error {
+	if err := Convert_v1alpha1_RoleRef_To_rbacgraph_RoleRef(&in.Ref, &out.Ref, s); err != nil {
+		return err
+	}
+	out.Assessment = (*rbacgraph.Assessment)(unsafe.Pointer(in.Assessment))
+	out.Phantom = in.Phantom
+	return nil
+}
+
+// Convert_v1alpha1_SubjectRoleSummary_To_rbacgraph_SubjectRoleSummary is an autogenerated conversion function.
+func Convert_v1alpha1_SubjectRoleSummary_To_rbacgraph_SubjectRoleSummary(in *SubjectRoleSummary, out *rbacgraph.SubjectRoleSummary, s conversion.Scope) error {
+	return autoConvert_v1alpha1_SubjectRoleSummary_To_rbacgraph_SubjectRoleSummary(in, out, s)
+}
+
+func autoConvert_rbacgraph_SubjectRoleSummary_To_v1alpha1_SubjectRoleSummary(in *rbacgraph.SubjectRoleSummary, out *SubjectRoleSummary, s conversion.Scope) error {
+	if err := Convert_rbacgraph_RoleRef_To_v1alpha1_RoleRef(&in.Ref, &out.Ref, s); err != nil {
+		return err
+	}
+	out.Assessment = (*Assessment)(unsafe.Pointer(in.Assessment))
+	out.Phantom = in.Phantom
+	return nil
+}
+
+// Convert_rbacgraph_SubjectRoleSummary_To_v1alpha1_SubjectRoleSummary is an autogenerated conversion function.
+func Convert_rbacgraph_SubjectRoleSummary_To_v1alpha1_SubjectRoleSummary(in *rbacgraph.SubjectRoleSummary, out *SubjectRoleSummary, s conversion.Scope) error {
+	return autoConvert_rbacgraph_SubjectRoleSummary_To_v1alpha1_SubjectRoleSummary(in, out, s)
+}
+
+func autoConvert_v1alpha1_SubjectWarning_To_rbacgraph_SubjectWarning(in *SubjectWarning, out *rbacgraph.SubjectWarning, s conversion.Scope) error {
+	out.Code = rbacgraph.SubjectWarningCode(in.Code)
+	out.Message = in.Message
+	out.Subjects = *(*[]rbacgraph.SubjectRef)(unsafe.Pointer(&in.Subjects))
+	out.Binding = (*rbacgraph.BindingRef)(unsafe.Pointer(in.Binding))
+	out.RoleRef = (*rbacgraph.RoleRef)(unsafe.Pointer(in.RoleRef))
+	out.RoleCount = in.RoleCount
+	return nil
+}
+
+// Convert_v1alpha1_SubjectWarning_To_rbacgraph_SubjectWarning is an autogenerated conversion function.
+func Convert_v1alpha1_SubjectWarning_To_rbacgraph_SubjectWarning(in *SubjectWarning, out *rbacgraph.SubjectWarning, s conversion.Scope) error {
+	return autoConvert_v1alpha1_SubjectWarning_To_rbacgraph_SubjectWarning(in, out, s)
+}
+
+func autoConvert_rbacgraph_SubjectWarning_To_v1alpha1_SubjectWarning(in *rbacgraph.SubjectWarning, out *SubjectWarning, s conversion.Scope) error {
+	out.Code = SubjectWarningCode(in.Code)
+	out.Message = in.Message
+	out.Subjects = *(*[]SubjectRef)(unsafe.Pointer(&in.Subjects))
+	out.Binding = (*BindingRef)(unsafe.Pointer(in.Binding))
+	out.RoleRef = (*RoleRef)(unsafe.Pointer(in.RoleRef))
+	out.RoleCount = in.RoleCount
+	return nil
+}
+
+// Convert_rbacgraph_SubjectWarning_To_v1alpha1_SubjectWarning is an autogenerated conversion function.
+func Convert_rbacgraph_SubjectWarning_To_v1alpha1_SubjectWarning(in *rbacgraph.SubjectWarning, out *SubjectWarning, s conversion.Scope) error {
+	return autoConvert_rbacgraph_SubjectWarning_To_v1alpha1_SubjectWarning(in, out, s)
 }
 
 func autoConvert_v1alpha1_VerbPermission_To_rbacgraph_VerbPermission(in *VerbPermission, out *rbacgraph.VerbPermission, s conversion.Scope) error {
