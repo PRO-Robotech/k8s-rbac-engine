@@ -102,6 +102,10 @@ func buildTestSnapshot() *indexer.Snapshot {
 		},
 	}
 
+	s.BindingsBySubject[indexer.SubjectKey{Kind: indexer.SubjectKindUser, Name: "admin"}] = s.BindingsByRoleRef[crbKey]
+	s.BindingsBySubject[indexer.SubjectKey{Kind: indexer.SubjectKindServiceAccount, Namespace: "ns-a", Name: "sa-1"}] = s.BindingsByRoleRef[rbAKey]
+	s.BindingsBySubject[indexer.SubjectKey{Kind: indexer.SubjectKindServiceAccount, Namespace: "ns-b", Name: "sa-2"}] = s.BindingsByRoleRef[rbBKey]
+
 	// Pods in ns-a and ns-b
 	s.PodsByServiceAccount[indexer.ServiceAccountKey{Namespace: "ns-a", Name: "sa-1"}] = []*indexer.PodRecord{
 		{UID: types.UID("pod-a-1"), Namespace: "ns-a", Name: "pod-a"},
@@ -340,5 +344,34 @@ func TestScoped_EmptySnapshot(t *testing.T) {
 	}
 	if len(result.AllRoleIDs) != 0 {
 		t.Error("expected no AllRoleIDs")
+	}
+}
+
+func TestScoped_BindingsBySubject(t *testing.T) {
+	s := buildTestSnapshot()
+	scope := &authz.AccessScope{
+		CanListClusterRoles:        true,
+		CanListClusterRoleBindings: true,
+		AllowedRoleNamespaces:      map[string]struct{}{"ns-a": {}},
+		AllowedBindingNamespaces:   map[string]struct{}{"ns-a": {}},
+		AllowedPodNamespaces:       map[string]struct{}{"ns-a": {}},
+		AllowedWorkloadNamespaces:  map[string]struct{}{"ns-a": {}},
+	}
+
+	result := indexer.Scoped(s, scope)
+
+	adminUser := indexer.SubjectKey{Kind: indexer.SubjectKindUser, Name: "admin"}
+	if bindings := result.BindingsBySubject[adminUser]; len(bindings) != 1 {
+		t.Errorf("expected cluster-scoped admin binding to survive, got %d bindings", len(bindings))
+	}
+
+	nsASA := indexer.SubjectKey{Kind: indexer.SubjectKindServiceAccount, Namespace: "ns-a", Name: "sa-1"}
+	if bindings := result.BindingsBySubject[nsASA]; len(bindings) != 1 {
+		t.Errorf("expected ns-a SA binding to survive, got %d bindings", len(bindings))
+	}
+
+	nsBSA := indexer.SubjectKey{Kind: indexer.SubjectKindServiceAccount, Namespace: "ns-b", Name: "sa-2"}
+	if bindings, ok := result.BindingsBySubject[nsBSA]; ok && len(bindings) > 0 {
+		t.Errorf("expected ns-b SA binding to be filtered out, got %d bindings", len(bindings))
 	}
 }

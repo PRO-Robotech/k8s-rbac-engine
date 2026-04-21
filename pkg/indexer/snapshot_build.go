@@ -19,6 +19,7 @@ func newEmptySnapshot() *Snapshot {
 		BuiltAt:               time.Now().UTC(),
 		RolesByID:             make(map[RoleID]*RoleRecord),
 		BindingsByRoleRef:     make(map[RoleRefKey][]*BindingRecord),
+		BindingsBySubject:     make(map[SubjectKey][]*BindingRecord),
 		AggregatedRoleSources: make(map[RoleID][]RoleID),
 		PodsByServiceAccount:  make(map[ServiceAccountKey][]*PodRecord),
 		ServiceAccounts:       make(map[ServiceAccountKey]struct{}),
@@ -238,6 +239,10 @@ func indexBindingRecord(next *Snapshot, uid types.UID, kind, namespace, name str
 		Subjects:  append([]rbacv1.Subject(nil), subjects...),
 	}
 	next.BindingsByRoleRef[key] = append(next.BindingsByRoleRef[key], bindRec)
+	for _, subject := range bindRec.Subjects {
+		sk := subjectKey(subject, namespace)
+		next.BindingsBySubject[sk] = append(next.BindingsBySubject[sk], bindRec)
+	}
 }
 
 func indexRoleBindings(next *Snapshot, roleBindings []*rbacv1.RoleBinding) {

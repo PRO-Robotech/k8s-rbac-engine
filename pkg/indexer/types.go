@@ -31,6 +31,21 @@ func (k ServiceAccountKey) String() string {
 	return k.Namespace + "/" + k.Name
 }
 
+// SubjectKey identifies an RBAC subject. Namespace is set only for ServiceAccount.
+type SubjectKey struct {
+	Kind      string
+	Namespace string
+	Name      string
+}
+
+func (k SubjectKey) String() string {
+	if k.Namespace == "" {
+		return k.Kind + ":" + k.Name
+	}
+
+	return k.Kind + ":" + k.Namespace + "/" + k.Name
+}
+
 const (
 	KindRole               = "Role"
 	KindClusterRole        = "ClusterRole"
@@ -96,6 +111,7 @@ type Snapshot struct {
 	BuiltAt               time.Time
 	RolesByID             map[RoleID]*RoleRecord
 	BindingsByRoleRef     map[RoleRefKey][]*BindingRecord
+	BindingsBySubject     map[SubjectKey][]*BindingRecord
 	AggregatedRoleSources map[RoleID][]RoleID
 	PodsByServiceAccount  map[ServiceAccountKey][]*PodRecord
 	ServiceAccounts       map[ServiceAccountKey]struct{}
