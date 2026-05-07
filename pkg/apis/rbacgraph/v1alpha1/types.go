@@ -669,3 +669,84 @@ func (SubjectBinding) OpenAPIModelName() string     { return openAPIPrefix + "Su
 func (SubjectRoleSummary) OpenAPIModelName() string { return openAPIPrefix + "SubjectRoleSummary" }
 func (SubjectWarning) OpenAPIModelName() string     { return openAPIPrefix + "SubjectWarning" }
 func (AttributedGrant) OpenAPIModelName() string    { return openAPIPrefix + "AttributedGrant" }
+
+const (
+	SubjectsBySelectorViewKind     = "SubjectsBySelectorView"
+	SubjectsBySelectorViewResource = "subjectsbyselectorviews"
+)
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// SubjectsBySelectorView returns subjects matching a selector, with role and binding provenance per grant.
+type SubjectsBySelectorView struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   SubjectsBySelectorViewSpec   `json:"spec"`
+	Status SubjectsBySelectorViewStatus `json:"status,omitempty"`
+}
+
+type SubjectsBySelectorViewSpec struct {
+	Selector             Selector     `json:"selector"`
+	MatchMode            MatchMode    `json:"matchMode,omitempty"`
+	WildcardMode         WildcardMode `json:"wildcardMode,omitempty"`
+	ExpandImplicitGroups bool         `json:"expandImplicitGroups,omitempty"`
+	FilterPhantomAPIs    bool         `json:"filterPhantomAPIs,omitempty"`
+}
+
+type SubjectsBySelectorViewStatus struct {
+	Selector               Selector         `json:"selector"`
+	ExpandedImplicitGroups bool             `json:"expandedImplicitGroups"`
+	Subjects               []ScopedSubject  `json:"subjects"`
+	Warnings               []SubjectWarning `json:"warnings,omitempty"`
+}
+
+type ScopedSubject struct {
+	Subject    SubjectRef        `json:"subject"`
+	Grants     []AttributedGrant `json:"grants"`
+	Assessment *Assessment       `json:"assessment,omitempty"`
+}
+
+func (r *SubjectsBySelectorView) EnsureDefaults() {
+	if strings.TrimSpace(r.APIVersion) == "" {
+		r.APIVersion = APIVersionValue
+	}
+	if strings.TrimSpace(r.Kind) == "" {
+		r.Kind = SubjectsBySelectorViewKind
+	}
+	r.Spec.EnsureDefaults()
+}
+
+func (s *SubjectsBySelectorViewSpec) EnsureDefaults() {
+	ensureSubjectSpecDefaults(&s.MatchMode, &s.WildcardMode)
+}
+
+func (s SubjectsBySelectorViewSpec) Validate() error {
+	if s.MatchMode != MatchModeAny && s.MatchMode != MatchModeAll {
+		return fmt.Errorf("invalid matchMode %q", s.MatchMode)
+	}
+	if s.WildcardMode != WildcardModeWildcard && s.WildcardMode != WildcardModeExact {
+		return fmt.Errorf("invalid wildcardMode %q", s.WildcardMode)
+	}
+	if !hasAnySelectorField(s.Selector) {
+		return errors.New("spec.selector must specify at least one of apiGroups/resources/verbs/resourceNames/nonResourceURLs")
+	}
+
+	return nil
+}
+
+func hasAnySelectorField(s Selector) bool {
+	return len(s.APIGroups) > 0 || len(s.Resources) > 0 || len(s.Verbs) > 0 ||
+		len(s.ResourceNames) > 0 || len(s.NonResourceURLs) > 0
+}
+
+func (SubjectsBySelectorView) OpenAPIModelName() string {
+	return openAPIPrefix + "SubjectsBySelectorView"
+}
+func (SubjectsBySelectorViewSpec) OpenAPIModelName() string {
+	return openAPIPrefix + "SubjectsBySelectorViewSpec"
+}
+func (SubjectsBySelectorViewStatus) OpenAPIModelName() string {
+	return openAPIPrefix + "SubjectsBySelectorViewStatus"
+}
+func (ScopedSubject) OpenAPIModelName() string { return openAPIPrefix + "ScopedSubject" }

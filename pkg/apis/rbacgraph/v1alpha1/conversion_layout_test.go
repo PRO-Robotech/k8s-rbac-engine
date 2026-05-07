@@ -37,6 +37,7 @@ func TestConversionLayoutCompatibility(t *testing.T) {
 		{"SubjectRoleSummary", SubjectRoleSummary{}, rbacgraph.SubjectRoleSummary{}},
 		{"SubjectWarning", SubjectWarning{}, rbacgraph.SubjectWarning{}},
 		{"AttributedGrant", AttributedGrant{}, rbacgraph.AttributedGrant{}},
+		{"ScopedSubject", ScopedSubject{}, rbacgraph.ScopedSubject{}},
 	}
 
 	for _, tc := range cases {

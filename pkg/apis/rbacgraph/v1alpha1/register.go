@@ -21,6 +21,7 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&RolePermissionsView{},
 		&SubjectPermissionsView{},
 		&SubjectGraphReview{},
+		&SubjectsBySelectorView{},
 	)
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 

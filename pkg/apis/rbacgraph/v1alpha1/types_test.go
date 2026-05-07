@@ -178,6 +178,100 @@ func TestSubjectPermissionsViewJSONRoundTrip(t *testing.T) {
 	}
 }
 
+func TestSubjectsBySelectorViewSpecEnsureDefaults(t *testing.T) {
+	spec := SubjectsBySelectorViewSpec{}
+	spec.EnsureDefaults()
+
+	if spec.MatchMode != MatchModeAny {
+		t.Errorf("expected default matchMode=%q, got %q", MatchModeAny, spec.MatchMode)
+	}
+	if spec.WildcardMode != WildcardModeWildcard {
+		t.Errorf("expected default wildcardMode=%q, got %q", WildcardModeWildcard, spec.WildcardMode)
+	}
+}
+
+func TestSubjectsBySelectorViewSpecValidate(t *testing.T) {
+	tests := []struct {
+		name     string
+		selector Selector
+		wantErr  bool
+	}{
+		{name: "verbs_only_ok", selector: Selector{Verbs: []string{"get"}}},
+		{name: "resources_only_ok", selector: Selector{Resources: []string{"secrets"}}},
+		{name: "non_resource_urls_ok", selector: Selector{NonResourceURLs: []string{"/healthz"}}},
+		{name: "empty_selector_rejected", selector: Selector{}, wantErr: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			spec := SubjectsBySelectorViewSpec{Selector: tt.selector}
+			spec.EnsureDefaults()
+			err := spec.Validate()
+			if tt.wantErr && err == nil {
+				t.Fatalf("expected validation error, got nil")
+			}
+			if !tt.wantErr && err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+		})
+	}
+}
+
+func TestSubjectsBySelectorViewEnsureDefaultsPopulatesTypeMeta(t *testing.T) {
+	view := &SubjectsBySelectorView{Spec: SubjectsBySelectorViewSpec{Selector: Selector{Verbs: []string{"get"}}}}
+	view.EnsureDefaults()
+	if view.APIVersion != APIVersionValue {
+		t.Errorf("expected apiVersion=%q, got %q", APIVersionValue, view.APIVersion)
+	}
+	if view.Kind != SubjectsBySelectorViewKind {
+		t.Errorf("expected kind=%q, got %q", SubjectsBySelectorViewKind, view.Kind)
+	}
+}
+
+func TestSubjectsBySelectorViewJSONRoundTrip(t *testing.T) {
+	orig := SubjectsBySelectorView{
+		Spec: SubjectsBySelectorViewSpec{
+			Selector:             Selector{Verbs: []string{"get"}, Resources: []string{"secrets"}},
+			ExpandImplicitGroups: true,
+		},
+		Status: SubjectsBySelectorViewStatus{
+			Selector:               Selector{Verbs: []string{"get"}, Resources: []string{"secrets"}},
+			ExpandedImplicitGroups: true,
+			Subjects: []ScopedSubject{{
+				Subject: SubjectRef{Kind: SubjectKindServiceAccount, Namespace: "team-a", Name: "foo"},
+				Grants: []AttributedGrant{{
+					SourceRole:    RoleRef{Kind: RoleRefKindClusterRole, Name: "view"},
+					SourceBinding: BindingRef{Kind: BindingKindClusterRoleBinding, Name: "view-crb"},
+					APIGroup:      "",
+					Resource:      "secrets",
+					Verb:          "get",
+				}},
+			}},
+		},
+	}
+
+	raw, err := json.Marshal(orig)
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	var decoded SubjectsBySelectorView
+	if err := json.Unmarshal(raw, &decoded); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if !decoded.Status.ExpandedImplicitGroups {
+		t.Errorf("expected expandedImplicitGroups=true round-trip, got false")
+	}
+	if len(decoded.Status.Subjects) != 1 || decoded.Status.Subjects[0].Subject.Name != "foo" {
+		t.Errorf("subject mismatch: got %+v", decoded.Status.Subjects)
+	}
+	if len(decoded.Status.Subjects[0].Grants) != 1 {
+		t.Fatalf("grants count mismatch")
+	}
+	g := decoded.Status.Subjects[0].Grants[0]
+	if g.SourceRole.Name != "view" || g.SourceBinding.Name != "view-crb" || g.Resource != "secrets" {
+		t.Errorf("grant fields mismatch: %+v", g)
+	}
+}
+
 func TestAttributedGrantJSONRoundTrip(t *testing.T) {
 	grant := AttributedGrant{
 		SourceRole:    RoleRef{Kind: RoleRefKindClusterRole, Name: "view"},

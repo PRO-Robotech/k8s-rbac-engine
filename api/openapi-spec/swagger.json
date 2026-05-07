@@ -182,6 +182,40 @@
           }
         }
       }
+    },
+    "/apis/rbacgraph.in-cloud.io/v1alpha1/subjectsbyselectorviews": {
+      "post": {
+        "description": "List subjects whose permissions match a selector, with role+binding provenance per grant",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "rbacgraph"
+        ],
+        "summary": "List subjects whose permissions match a selector, with role+binding provenance per grant",
+        "operationId": "createSubjectsBySelectorView",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1alpha1.SubjectsBySelectorView"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "$ref": "#/definitions/v1alpha1.SubjectsBySelectorView"
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -1224,6 +1258,29 @@
         }
       }
     },
+    "k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.ScopedSubject": {
+      "type": "object",
+      "required": [
+        "subject",
+        "grants"
+      ],
+      "properties": {
+        "assessment": {
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.Assessment"
+        },
+        "grants": {
+          "type": "array",
+          "items": {
+            "default": {},
+            "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.AttributedGrant"
+          }
+        },
+        "subject": {
+          "default": {},
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.SubjectRef"
+        }
+      }
+    },
     "k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.Selector": {
       "type": "object",
       "properties": {
@@ -1638,6 +1695,101 @@
           "items": {
             "default": {},
             "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.SubjectRef"
+          }
+        }
+      }
+    },
+    "k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.SubjectsBySelectorView": {
+      "description": "SubjectsBySelectorView returns the list of subjects (SA/User/Group) whose granted permissions match the input selector, with full provenance per grant (sourceRole + sourceBinding).",
+      "type": "object",
+      "required": [
+        "spec"
+      ],
+      "properties": {
+        "apiVersion": {
+          "description": "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
+          "type": "string"
+        },
+        "kind": {
+          "description": "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
+          "type": "string"
+        },
+        "metadata": {
+          "default": {},
+          "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.ObjectMeta"
+        },
+        "spec": {
+          "default": {},
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.SubjectsBySelectorViewSpec"
+        },
+        "status": {
+          "default": {},
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.SubjectsBySelectorViewStatus"
+        }
+      }
+    },
+    "k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.SubjectsBySelectorViewSpec": {
+      "type": "object",
+      "required": [
+        "selector"
+      ],
+      "properties": {
+        "expandImplicitGroups": {
+          "type": "boolean"
+        },
+        "filterPhantomAPIs": {
+          "type": "boolean"
+        },
+        "matchMode": {
+          "description": "Possible enum values:\n - `\"all\"`\n - `\"any\"`",
+          "type": "string",
+          "enum": [
+            "all",
+            "any"
+          ]
+        },
+        "selector": {
+          "default": {},
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.Selector"
+        },
+        "wildcardMode": {
+          "description": "Possible enum values:\n - `\"exact\"`\n - `\"wildcard\"`",
+          "type": "string",
+          "enum": [
+            "exact",
+            "wildcard"
+          ]
+        }
+      }
+    },
+    "k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.SubjectsBySelectorViewStatus": {
+      "type": "object",
+      "required": [
+        "selector",
+        "expandedImplicitGroups",
+        "subjects"
+      ],
+      "properties": {
+        "expandedImplicitGroups": {
+          "type": "boolean",
+          "default": false
+        },
+        "selector": {
+          "default": {},
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.Selector"
+        },
+        "subjects": {
+          "type": "array",
+          "items": {
+            "default": {},
+            "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.ScopedSubject"
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "default": {},
+            "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.SubjectWarning"
           }
         }
       }

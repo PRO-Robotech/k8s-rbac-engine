@@ -545,3 +545,59 @@ func validateSubjectSpec(subject SubjectRef, matchMode MatchMode, wildcardMode W
 
 	return nil
 }
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// SubjectsBySelectorView returns subjects matching a selector, with role and binding provenance per grant.
+type SubjectsBySelectorView struct {
+	metav1.TypeMeta
+	metav1.ObjectMeta
+
+	Spec   SubjectsBySelectorViewSpec
+	Status SubjectsBySelectorViewStatus
+}
+
+type SubjectsBySelectorViewSpec struct {
+	Selector             Selector
+	MatchMode            MatchMode
+	WildcardMode         WildcardMode
+	ExpandImplicitGroups bool
+	FilterPhantomAPIs    bool
+}
+
+type SubjectsBySelectorViewStatus struct {
+	Selector               Selector
+	ExpandedImplicitGroups bool
+	Subjects               []ScopedSubject
+	Warnings               []SubjectWarning
+}
+
+// ScopedSubject is one subject from a selector match with attributed grants.
+type ScopedSubject struct {
+	Subject    SubjectRef
+	Grants     []AttributedGrant
+	Assessment *Assessment
+}
+
+func (s *SubjectsBySelectorViewSpec) EnsureDefaults() {
+	ensureSubjectSpecDefaults(&s.MatchMode, &s.WildcardMode)
+}
+
+func (s SubjectsBySelectorViewSpec) Validate() error {
+	if s.MatchMode != MatchModeAny && s.MatchMode != MatchModeAll {
+		return fmt.Errorf("invalid matchMode %q", s.MatchMode)
+	}
+	if s.WildcardMode != WildcardModeWildcard && s.WildcardMode != WildcardModeExact {
+		return fmt.Errorf("invalid wildcardMode %q", s.WildcardMode)
+	}
+	if !hasAnySelectorField(s.Selector) {
+		return errors.New("spec.selector must specify at least one of apiGroups/resources/verbs/resourceNames/nonResourceURLs")
+	}
+
+	return nil
+}
+
+func hasAnySelectorField(s Selector) bool {
+	return len(s.APIGroups) > 0 || len(s.Resources) > 0 || len(s.Verbs) > 0 ||
+		len(s.ResourceNames) > 0 || len(s.NonResourceURLs) > 0
+}
