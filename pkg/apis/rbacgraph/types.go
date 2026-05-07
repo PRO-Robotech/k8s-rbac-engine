@@ -601,3 +601,50 @@ func hasAnySelectorField(s Selector) bool {
 	return len(s.APIGroups) > 0 || len(s.Resources) > 0 || len(s.Verbs) > 0 ||
 		len(s.ResourceNames) > 0 || len(s.NonResourceURLs) > 0
 }
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// SubjectsBySelectorGraph returns the subject-rooted graph of bindings, roles, and matched rules for a selector.
+type SubjectsBySelectorGraph struct {
+	metav1.TypeMeta
+	metav1.ObjectMeta
+
+	Spec   SubjectsBySelectorGraphSpec
+	Status SubjectsBySelectorGraphStatus
+}
+
+type SubjectsBySelectorGraphSpec struct {
+	Selector             Selector
+	MatchMode            MatchMode
+	WildcardMode         WildcardMode
+	ExpandImplicitGroups bool
+	FilterPhantomAPIs    bool
+}
+
+type SubjectsBySelectorGraphStatus struct {
+	Selector               Selector
+	ExpandedImplicitGroups bool
+	MatchedRoles           int
+	MatchedBindings        int
+	MatchedSubjects        int
+	Graph                  Graph
+	Warnings               []SubjectWarning
+}
+
+func (s *SubjectsBySelectorGraphSpec) EnsureDefaults() {
+	ensureSubjectSpecDefaults(&s.MatchMode, &s.WildcardMode)
+}
+
+func (s SubjectsBySelectorGraphSpec) Validate() error {
+	if s.MatchMode != MatchModeAny && s.MatchMode != MatchModeAll {
+		return fmt.Errorf("invalid matchMode %q", s.MatchMode)
+	}
+	if s.WildcardMode != WildcardModeWildcard && s.WildcardMode != WildcardModeExact {
+		return fmt.Errorf("invalid wildcardMode %q", s.WildcardMode)
+	}
+	if !hasAnySelectorField(s.Selector) {
+		return errors.New("spec.selector must specify at least one of apiGroups/resources/verbs/resourceNames/nonResourceURLs")
+	}
+
+	return nil
+}

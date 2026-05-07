@@ -23,6 +23,11 @@ func RegisterDefaults(scheme *runtime.Scheme) error {
 			SetObjectDefaults_SubjectsBySelectorView(view)
 		}
 	})
+	scheme.AddTypeDefaultingFunc(&SubjectsBySelectorGraph{}, func(obj interface{}) {
+		if graph, ok := obj.(*SubjectsBySelectorGraph); ok {
+			SetObjectDefaults_SubjectsBySelectorGraph(graph)
+		}
+	})
 
 	return nil
 }
@@ -40,5 +45,9 @@ func SetObjectDefaults_SubjectGraphReview(in *SubjectGraphReview) {
 }
 
 func SetObjectDefaults_SubjectsBySelectorView(in *SubjectsBySelectorView) {
+	in.EnsureDefaults()
+}
+
+func SetObjectDefaults_SubjectsBySelectorGraph(in *SubjectsBySelectorGraph) {
 	in.EnsureDefaults()
 }

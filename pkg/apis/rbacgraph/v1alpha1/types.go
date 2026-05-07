@@ -750,3 +750,75 @@ func (SubjectsBySelectorViewStatus) OpenAPIModelName() string {
 	return openAPIPrefix + "SubjectsBySelectorViewStatus"
 }
 func (ScopedSubject) OpenAPIModelName() string { return openAPIPrefix + "ScopedSubject" }
+
+const (
+	SubjectsBySelectorGraphKind     = "SubjectsBySelectorGraph"
+	SubjectsBySelectorGraphResource = "subjectsbyselectorgraphs"
+)
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// SubjectsBySelectorGraph returns the subject-rooted graph of bindings, roles, and matched rules for a selector.
+type SubjectsBySelectorGraph struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   SubjectsBySelectorGraphSpec   `json:"spec"`
+	Status SubjectsBySelectorGraphStatus `json:"status,omitempty"`
+}
+
+type SubjectsBySelectorGraphSpec struct {
+	Selector             Selector     `json:"selector"`
+	MatchMode            MatchMode    `json:"matchMode,omitempty"`
+	WildcardMode         WildcardMode `json:"wildcardMode,omitempty"`
+	ExpandImplicitGroups bool         `json:"expandImplicitGroups,omitempty"`
+	FilterPhantomAPIs    bool         `json:"filterPhantomAPIs,omitempty"`
+}
+
+type SubjectsBySelectorGraphStatus struct {
+	Selector               Selector         `json:"selector"`
+	ExpandedImplicitGroups bool             `json:"expandedImplicitGroups"`
+	MatchedRoles           int              `json:"matchedRoles"`
+	MatchedBindings        int              `json:"matchedBindings"`
+	MatchedSubjects        int              `json:"matchedSubjects"`
+	Graph                  Graph            `json:"graph"`
+	Warnings               []SubjectWarning `json:"warnings,omitempty"`
+}
+
+func (r *SubjectsBySelectorGraph) EnsureDefaults() {
+	if strings.TrimSpace(r.APIVersion) == "" {
+		r.APIVersion = APIVersionValue
+	}
+	if strings.TrimSpace(r.Kind) == "" {
+		r.Kind = SubjectsBySelectorGraphKind
+	}
+	r.Spec.EnsureDefaults()
+}
+
+func (s *SubjectsBySelectorGraphSpec) EnsureDefaults() {
+	ensureSubjectSpecDefaults(&s.MatchMode, &s.WildcardMode)
+}
+
+func (s SubjectsBySelectorGraphSpec) Validate() error {
+	if s.MatchMode != MatchModeAny && s.MatchMode != MatchModeAll {
+		return fmt.Errorf("invalid matchMode %q", s.MatchMode)
+	}
+	if s.WildcardMode != WildcardModeWildcard && s.WildcardMode != WildcardModeExact {
+		return fmt.Errorf("invalid wildcardMode %q", s.WildcardMode)
+	}
+	if !hasAnySelectorField(s.Selector) {
+		return errors.New("spec.selector must specify at least one of apiGroups/resources/verbs/resourceNames/nonResourceURLs")
+	}
+
+	return nil
+}
+
+func (SubjectsBySelectorGraph) OpenAPIModelName() string {
+	return openAPIPrefix + "SubjectsBySelectorGraph"
+}
+func (SubjectsBySelectorGraphSpec) OpenAPIModelName() string {
+	return openAPIPrefix + "SubjectsBySelectorGraphSpec"
+}
+func (SubjectsBySelectorGraphStatus) OpenAPIModelName() string {
+	return openAPIPrefix + "SubjectsBySelectorGraphStatus"
+}

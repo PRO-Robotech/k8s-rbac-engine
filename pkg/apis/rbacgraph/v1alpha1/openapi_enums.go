@@ -178,6 +178,8 @@ func injectEnumsIntoStructFields(defs map[string]common.OpenAPIDefinition) {
 	patchField("SubjectGraphReviewSpec", "wildcardMode", []any{string(WildcardModeWildcard), string(WildcardModeExact)})
 	patchField("SubjectsBySelectorViewSpec", "matchMode", []any{string(MatchModeAny), string(MatchModeAll)})
 	patchField("SubjectsBySelectorViewSpec", "wildcardMode", []any{string(WildcardModeWildcard), string(WildcardModeExact)})
+	patchField("SubjectsBySelectorGraphSpec", "matchMode", []any{string(MatchModeAny), string(MatchModeAll)})
+	patchField("SubjectsBySelectorGraphSpec", "wildcardMode", []any{string(WildcardModeWildcard), string(WildcardModeExact)})
 	subjectKinds := []any{string(SubjectKindServiceAccount), string(SubjectKindUser), string(SubjectKindGroup)}
 	patchField("SubjectRef", "kind", subjectKinds)
 	bindingKinds := []any{string(BindingKindRoleBinding), string(BindingKindClusterRoleBinding)}

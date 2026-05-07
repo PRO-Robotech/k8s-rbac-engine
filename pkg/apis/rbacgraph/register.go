@@ -22,6 +22,7 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&SubjectPermissionsView{},
 		&SubjectGraphReview{},
 		&SubjectsBySelectorView{},
+		&SubjectsBySelectorGraph{},
 	)
 
 	return nil
