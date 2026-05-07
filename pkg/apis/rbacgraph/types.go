@@ -1,6 +1,7 @@
 package rbacgraph
 
 import (
+	"errors"
 	"fmt"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -333,6 +334,316 @@ func (s *RoleGraphReviewSpec) NormalizeRuntimeFlags() []string {
 		s.IncludePods = true
 
 		return []string{"includeWorkloads=true requires includePods=true; includePods was enabled automatically"}
+	}
+
+	return nil
+}
+
+// ---------- SubjectPermissionsView / SubjectGraphReview types ----------
+// SYNC: Keep types/constants/methods in sync with pkg/apis/rbacgraph/v1alpha1/types.go
+
+type SubjectKind string
+
+const (
+	SubjectKindServiceAccount SubjectKind = "ServiceAccount"
+	SubjectKindUser           SubjectKind = "User"
+	SubjectKindGroup          SubjectKind = "Group"
+)
+
+type BindingKind string
+
+const (
+	BindingKindRoleBinding        BindingKind = "RoleBinding"
+	BindingKindClusterRoleBinding BindingKind = "ClusterRoleBinding"
+)
+
+type EffectiveScope string
+
+const (
+	EffectiveScopeCluster    EffectiveScope = "cluster"
+	EffectiveScopeNamespaced EffectiveScope = "namespaced"
+)
+
+type SubjectWarningCode string
+
+const (
+	SubjectWarningCodeImpersonationCapable SubjectWarningCode = "ImpersonationCapable"
+	SubjectWarningCodeBrokenBinding        SubjectWarningCode = "BrokenBinding"
+	SubjectWarningCodeLargeResponse        SubjectWarningCode = "LargeResponse"
+)
+
+// SubjectRef identifies an RBAC subject. Namespace is populated only for ServiceAccount.
+type SubjectRef struct {
+	Kind      SubjectKind
+	Name      string
+	Namespace string
+}
+
+// BindingRef identifies a RoleBinding or ClusterRoleBinding. Namespace is empty for ClusterRoleBinding.
+type BindingRef struct {
+	Kind      BindingKind
+	Name      string
+	Namespace string
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// SubjectPermissionsView returns the aggregated permissions of a subject
+// (ServiceAccount, User, or Group) across all roles bound to it.
+type SubjectPermissionsView struct {
+	metav1.TypeMeta
+	metav1.ObjectMeta
+
+	Spec   SubjectPermissionsViewSpec
+	Status SubjectPermissionsViewStatus
+}
+
+type SubjectPermissionsViewSpec struct {
+	Subject           SubjectRef
+	Selector          Selector
+	MatchMode         MatchMode
+	WildcardMode      WildcardMode
+	DirectOnly        bool
+	FilterPhantomAPIs bool
+}
+
+type SubjectPermissionsViewStatus struct {
+	Subject          SubjectRef
+	ResolvedSubjects []SubjectRef
+	APIGroups        []APIGroupPermissions
+	NonResourceURLs  *NonResourceURLPermissions
+	Grants           []AttributedGrant
+	Bindings         []SubjectBinding
+	Roles            []SubjectRoleSummary
+	Warnings         []SubjectWarning
+}
+
+type SubjectBinding struct {
+	Kind           BindingKind
+	Name           string
+	Namespace      string
+	RoleRef        RoleRef
+	EffectiveScope EffectiveScope
+	ViaSubject     SubjectRef
+	Broken         bool
+}
+
+type SubjectRoleSummary struct {
+	Ref        RoleRef
+	Assessment *Assessment
+	Phantom    bool
+}
+
+// AttributedGrant is one permission the subject holds, annotated with the
+// role that defines it and the binding that brought the role into scope.
+// Used only in SubjectPermissionsViewStatus.Grants; has no counterpart in
+// role-centric responses where the source is implicit.
+type AttributedGrant struct {
+	SourceRole     RoleRef
+	SourceBinding  BindingRef
+	APIGroup       string
+	Resource       string
+	Verb           string
+	ResourceNames  []string
+	NonResourceURL string
+}
+
+type SubjectWarning struct {
+	Code      SubjectWarningCode
+	Message   string
+	Subjects  []SubjectRef
+	Binding   *BindingRef
+	RoleRef   *RoleRef
+	RoleCount int
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// SubjectGraphReview returns the RBAC graph (bindings, roles, rules) rooted
+// at a subject. Same model as SubjectPermissionsView, projected as nodes+edges.
+type SubjectGraphReview struct {
+	metav1.TypeMeta
+	metav1.ObjectMeta
+
+	Spec   SubjectGraphReviewSpec
+	Status SubjectGraphReviewStatus
+}
+
+type SubjectGraphReviewSpec struct {
+	Subject           SubjectRef
+	Selector          Selector
+	MatchMode         MatchMode
+	WildcardMode      WildcardMode
+	DirectOnly        bool
+	FilterPhantomAPIs bool
+}
+
+type SubjectGraphReviewStatus struct {
+	Subject          SubjectRef
+	ResolvedSubjects []SubjectRef
+	MatchedRoles     int
+	MatchedBindings  int
+	Graph            Graph
+	Warnings         []SubjectWarning
+	KnownGaps        []string
+}
+
+// ---------- subject spec methods ----------
+
+func (s *SubjectPermissionsViewSpec) EnsureDefaults() {
+	ensureSubjectSpecDefaults(&s.MatchMode, &s.WildcardMode)
+}
+
+func (s SubjectPermissionsViewSpec) Validate() error {
+	return validateSubjectSpec(s.Subject, s.MatchMode, s.WildcardMode)
+}
+
+func (s *SubjectGraphReviewSpec) EnsureDefaults() {
+	ensureSubjectSpecDefaults(&s.MatchMode, &s.WildcardMode)
+}
+
+func (s SubjectGraphReviewSpec) Validate() error {
+	return validateSubjectSpec(s.Subject, s.MatchMode, s.WildcardMode)
+}
+
+func ensureSubjectSpecDefaults(matchMode *MatchMode, wildcardMode *WildcardMode) {
+	if *matchMode == "" {
+		*matchMode = MatchModeAny
+	}
+	switch *wildcardMode {
+	case "":
+		*wildcardMode = WildcardModeWildcard
+	case "expand":
+		*wildcardMode = WildcardModeWildcard
+	}
+}
+
+func validateSubjectSpec(subject SubjectRef, matchMode MatchMode, wildcardMode WildcardMode) error {
+	if subject.Kind == "" {
+		return errors.New("subject.kind is required")
+	}
+	switch subject.Kind {
+	case SubjectKindServiceAccount, SubjectKindUser, SubjectKindGroup:
+	default:
+		return fmt.Errorf("invalid subject.kind %q", subject.Kind)
+	}
+	if subject.Name == "" {
+		return errors.New("subject.name is required")
+	}
+	if subject.Kind == SubjectKindServiceAccount && subject.Namespace == "" {
+		return errors.New("subject.namespace is required for ServiceAccount")
+	}
+	if subject.Kind != SubjectKindServiceAccount && subject.Namespace != "" {
+		return fmt.Errorf("subject.namespace must be empty for kind %q", subject.Kind)
+	}
+	if matchMode != MatchModeAny && matchMode != MatchModeAll {
+		return fmt.Errorf("invalid matchMode %q", matchMode)
+	}
+	if wildcardMode != WildcardModeWildcard && wildcardMode != WildcardModeExact {
+		return fmt.Errorf("invalid wildcardMode %q", wildcardMode)
+	}
+
+	return nil
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// SubjectsBySelectorView returns subjects matching a selector, with role and binding provenance per grant.
+type SubjectsBySelectorView struct {
+	metav1.TypeMeta
+	metav1.ObjectMeta
+
+	Spec   SubjectsBySelectorViewSpec
+	Status SubjectsBySelectorViewStatus
+}
+
+type SubjectsBySelectorViewSpec struct {
+	Selector             Selector
+	MatchMode            MatchMode
+	WildcardMode         WildcardMode
+	ExpandImplicitGroups bool
+	FilterPhantomAPIs    bool
+}
+
+type SubjectsBySelectorViewStatus struct {
+	Selector               Selector
+	ExpandedImplicitGroups bool
+	Subjects               []ScopedSubject
+	Warnings               []SubjectWarning
+}
+
+// ScopedSubject is one subject from a selector match with attributed grants.
+type ScopedSubject struct {
+	Subject    SubjectRef
+	Grants     []AttributedGrant
+	Assessment *Assessment
+}
+
+func (s *SubjectsBySelectorViewSpec) EnsureDefaults() {
+	ensureSubjectSpecDefaults(&s.MatchMode, &s.WildcardMode)
+}
+
+func (s SubjectsBySelectorViewSpec) Validate() error {
+	if s.MatchMode != MatchModeAny && s.MatchMode != MatchModeAll {
+		return fmt.Errorf("invalid matchMode %q", s.MatchMode)
+	}
+	if s.WildcardMode != WildcardModeWildcard && s.WildcardMode != WildcardModeExact {
+		return fmt.Errorf("invalid wildcardMode %q", s.WildcardMode)
+	}
+	if !hasAnySelectorField(s.Selector) {
+		return errors.New("spec.selector must specify at least one of apiGroups/resources/verbs/resourceNames/nonResourceURLs")
+	}
+
+	return nil
+}
+
+func hasAnySelectorField(s Selector) bool {
+	return len(s.APIGroups) > 0 || len(s.Resources) > 0 || len(s.Verbs) > 0 ||
+		len(s.ResourceNames) > 0 || len(s.NonResourceURLs) > 0
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// SubjectsBySelectorGraph returns the subject-rooted graph of bindings, roles, and matched rules for a selector.
+type SubjectsBySelectorGraph struct {
+	metav1.TypeMeta
+	metav1.ObjectMeta
+
+	Spec   SubjectsBySelectorGraphSpec
+	Status SubjectsBySelectorGraphStatus
+}
+
+type SubjectsBySelectorGraphSpec struct {
+	Selector             Selector
+	MatchMode            MatchMode
+	WildcardMode         WildcardMode
+	ExpandImplicitGroups bool
+	FilterPhantomAPIs    bool
+}
+
+type SubjectsBySelectorGraphStatus struct {
+	Selector               Selector
+	ExpandedImplicitGroups bool
+	MatchedRoles           int
+	MatchedBindings        int
+	MatchedSubjects        int
+	Graph                  Graph
+	Warnings               []SubjectWarning
+}
+
+func (s *SubjectsBySelectorGraphSpec) EnsureDefaults() {
+	ensureSubjectSpecDefaults(&s.MatchMode, &s.WildcardMode)
+}
+
+func (s SubjectsBySelectorGraphSpec) Validate() error {
+	if s.MatchMode != MatchModeAny && s.MatchMode != MatchModeAll {
+		return fmt.Errorf("invalid matchMode %q", s.MatchMode)
+	}
+	if s.WildcardMode != WildcardModeWildcard && s.WildcardMode != WildcardModeExact {
+		return fmt.Errorf("invalid wildcardMode %q", s.WildcardMode)
+	}
+	if !hasAnySelectorField(s.Selector) {
+		return errors.New("spec.selector must specify at least one of apiGroups/resources/verbs/resourceNames/nonResourceURLs")
 	}
 
 	return nil

@@ -34,6 +34,8 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 	return map[string]common.OpenAPIDefinition{
 		APIGroupPermissions{}.OpenAPIModelName():           schema_pkg_apis_rbacgraph_v1alpha1_APIGroupPermissions(ref),
 		Assessment{}.OpenAPIModelName():                    schema_pkg_apis_rbacgraph_v1alpha1_Assessment(ref),
+		AttributedGrant{}.OpenAPIModelName():               schema_pkg_apis_rbacgraph_v1alpha1_AttributedGrant(ref),
+		BindingRef{}.OpenAPIModelName():                    schema_pkg_apis_rbacgraph_v1alpha1_BindingRef(ref),
 		GrantingRule{}.OpenAPIModelName():                  schema_pkg_apis_rbacgraph_v1alpha1_GrantingRule(ref),
 		Graph{}.OpenAPIModelName():                         schema_pkg_apis_rbacgraph_v1alpha1_Graph(ref),
 		GraphEdge{}.OpenAPIModelName():                     schema_pkg_apis_rbacgraph_v1alpha1_GraphEdge(ref),
@@ -53,7 +55,24 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		RolePermissionsViewStatus{}.OpenAPIModelName():     schema_pkg_apis_rbacgraph_v1alpha1_RolePermissionsViewStatus(ref),
 		RoleRef{}.OpenAPIModelName():                       schema_pkg_apis_rbacgraph_v1alpha1_RoleRef(ref),
 		RuleRef{}.OpenAPIModelName():                       schema_pkg_apis_rbacgraph_v1alpha1_RuleRef(ref),
+		ScopedSubject{}.OpenAPIModelName():                 schema_pkg_apis_rbacgraph_v1alpha1_ScopedSubject(ref),
 		Selector{}.OpenAPIModelName():                      schema_pkg_apis_rbacgraph_v1alpha1_Selector(ref),
+		SubjectBinding{}.OpenAPIModelName():                schema_pkg_apis_rbacgraph_v1alpha1_SubjectBinding(ref),
+		SubjectGraphReview{}.OpenAPIModelName():            schema_pkg_apis_rbacgraph_v1alpha1_SubjectGraphReview(ref),
+		SubjectGraphReviewSpec{}.OpenAPIModelName():        schema_pkg_apis_rbacgraph_v1alpha1_SubjectGraphReviewSpec(ref),
+		SubjectGraphReviewStatus{}.OpenAPIModelName():      schema_pkg_apis_rbacgraph_v1alpha1_SubjectGraphReviewStatus(ref),
+		SubjectPermissionsView{}.OpenAPIModelName():        schema_pkg_apis_rbacgraph_v1alpha1_SubjectPermissionsView(ref),
+		SubjectPermissionsViewSpec{}.OpenAPIModelName():    schema_pkg_apis_rbacgraph_v1alpha1_SubjectPermissionsViewSpec(ref),
+		SubjectPermissionsViewStatus{}.OpenAPIModelName():  schema_pkg_apis_rbacgraph_v1alpha1_SubjectPermissionsViewStatus(ref),
+		SubjectRef{}.OpenAPIModelName():                    schema_pkg_apis_rbacgraph_v1alpha1_SubjectRef(ref),
+		SubjectRoleSummary{}.OpenAPIModelName():            schema_pkg_apis_rbacgraph_v1alpha1_SubjectRoleSummary(ref),
+		SubjectWarning{}.OpenAPIModelName():                schema_pkg_apis_rbacgraph_v1alpha1_SubjectWarning(ref),
+		SubjectsBySelectorGraph{}.OpenAPIModelName():       schema_pkg_apis_rbacgraph_v1alpha1_SubjectsBySelectorGraph(ref),
+		SubjectsBySelectorGraphSpec{}.OpenAPIModelName():   schema_pkg_apis_rbacgraph_v1alpha1_SubjectsBySelectorGraphSpec(ref),
+		SubjectsBySelectorGraphStatus{}.OpenAPIModelName(): schema_pkg_apis_rbacgraph_v1alpha1_SubjectsBySelectorGraphStatus(ref),
+		SubjectsBySelectorView{}.OpenAPIModelName():        schema_pkg_apis_rbacgraph_v1alpha1_SubjectsBySelectorView(ref),
+		SubjectsBySelectorViewSpec{}.OpenAPIModelName():    schema_pkg_apis_rbacgraph_v1alpha1_SubjectsBySelectorViewSpec(ref),
+		SubjectsBySelectorViewStatus{}.OpenAPIModelName():  schema_pkg_apis_rbacgraph_v1alpha1_SubjectsBySelectorViewStatus(ref),
 		VerbPermission{}.OpenAPIModelName():                schema_pkg_apis_rbacgraph_v1alpha1_VerbPermission(ref),
 		resource.Quantity{}.OpenAPIModelName():             schema_apimachinery_pkg_api_resource_Quantity(ref),
 		v1.APIGroup{}.OpenAPIModelName():                   schema_pkg_apis_meta_v1_APIGroup(ref),
@@ -218,6 +237,109 @@ func schema_pkg_apis_rbacgraph_v1alpha1_Assessment(ref common.ReferenceCallback)
 					},
 				},
 				Required: []string{"criticalCount", "highCount", "mediumCount", "lowCount", "totalCount"},
+			},
+		},
+	}
+}
+
+func schema_pkg_apis_rbacgraph_v1alpha1_AttributedGrant(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "AttributedGrant is one permission the subject holds, annotated with the role that defines it and the binding that brought the role into scope. Used only in SubjectPermissionsViewStatus.Grants; has no counterpart in role-centric responses where the source is implicit.",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"sourceRole": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref(RoleRef{}.OpenAPIModelName()),
+						},
+					},
+					"sourceBinding": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref(BindingRef{}.OpenAPIModelName()),
+						},
+					},
+					"apiGroup": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"resource": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"verb": {
+						SchemaProps: spec.SchemaProps{
+							Default: "",
+							Type:    []string{"string"},
+							Format:  "",
+						},
+					},
+					"resourceNames": {
+						SchemaProps: spec.SchemaProps{
+							Type: []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: "",
+										Type:    []string{"string"},
+										Format:  "",
+									},
+								},
+							},
+						},
+					},
+					"nonResourceURL": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+				},
+				Required: []string{"sourceRole", "sourceBinding", "verb"},
+			},
+		},
+		Dependencies: []string{
+			BindingRef{}.OpenAPIModelName(), RoleRef{}.OpenAPIModelName()},
+	}
+}
+
+func schema_pkg_apis_rbacgraph_v1alpha1_BindingRef(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "BindingRef identifies a RoleBinding or ClusterRoleBinding. Namespace is empty for ClusterRoleBinding.",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Possible enum values:\n - `\"ClusterRoleBinding\"`\n - `\"RoleBinding\"`",
+							Default:     "",
+							Type:        []string{"string"},
+							Format:      "",
+							Enum:        []interface{}{"ClusterRoleBinding", "RoleBinding"},
+						},
+					},
+					"name": {
+						SchemaProps: spec.SchemaProps{
+							Default: "",
+							Type:    []string{"string"},
+							Format:  "",
+						},
+					},
+					"namespace": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+				},
+				Required: []string{"kind", "name"},
 			},
 		},
 	}
@@ -1366,6 +1488,45 @@ func schema_pkg_apis_rbacgraph_v1alpha1_RuleRef(ref common.ReferenceCallback) co
 	}
 }
 
+func schema_pkg_apis_rbacgraph_v1alpha1_ScopedSubject(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"subject": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref(SubjectRef{}.OpenAPIModelName()),
+						},
+					},
+					"grants": {
+						SchemaProps: spec.SchemaProps{
+							Type: []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: map[string]interface{}{},
+										Ref:     ref(AttributedGrant{}.OpenAPIModelName()),
+									},
+								},
+							},
+						},
+					},
+					"assessment": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref(Assessment{}.OpenAPIModelName()),
+						},
+					},
+				},
+				Required: []string{"subject", "grants"},
+			},
+		},
+		Dependencies: []string{
+			Assessment{}.OpenAPIModelName(), AttributedGrant{}.OpenAPIModelName(), SubjectRef{}.OpenAPIModelName()},
+	}
+}
+
 func schema_pkg_apis_rbacgraph_v1alpha1_Selector(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
@@ -1445,6 +1606,905 @@ func schema_pkg_apis_rbacgraph_v1alpha1_Selector(ref common.ReferenceCallback) c
 				},
 			},
 		},
+	}
+}
+
+func schema_pkg_apis_rbacgraph_v1alpha1_SubjectBinding(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Possible enum values:\n - `\"ClusterRoleBinding\"`\n - `\"RoleBinding\"`",
+							Default:     "",
+							Type:        []string{"string"},
+							Format:      "",
+							Enum:        []interface{}{"ClusterRoleBinding", "RoleBinding"},
+						},
+					},
+					"name": {
+						SchemaProps: spec.SchemaProps{
+							Default: "",
+							Type:    []string{"string"},
+							Format:  "",
+						},
+					},
+					"namespace": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"roleRef": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref(RoleRef{}.OpenAPIModelName()),
+						},
+					},
+					"effectiveScope": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Possible enum values:\n - `\"cluster\"`\n - `\"namespaced\"`",
+							Default:     "",
+							Type:        []string{"string"},
+							Format:      "",
+							Enum:        []interface{}{"cluster", "namespaced"},
+						},
+					},
+					"viaSubject": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref(SubjectRef{}.OpenAPIModelName()),
+						},
+					},
+					"broken": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"boolean"},
+							Format: "",
+						},
+					},
+				},
+				Required: []string{"kind", "name", "roleRef", "effectiveScope", "viaSubject"},
+			},
+		},
+		Dependencies: []string{
+			RoleRef{}.OpenAPIModelName(), SubjectRef{}.OpenAPIModelName()},
+	}
+}
+
+func schema_pkg_apis_rbacgraph_v1alpha1_SubjectGraphReview(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "SubjectGraphReview returns the RBAC graph (bindings, roles, rules) rooted at a subject. Same model as SubjectPermissionsView, projected as nodes+edges.",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref(v1.ObjectMeta{}.OpenAPIModelName()),
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref(SubjectGraphReviewSpec{}.OpenAPIModelName()),
+						},
+					},
+					"status": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref(SubjectGraphReviewStatus{}.OpenAPIModelName()),
+						},
+					},
+				},
+				Required: []string{"spec"},
+			},
+		},
+		Dependencies: []string{
+			SubjectGraphReviewSpec{}.OpenAPIModelName(), SubjectGraphReviewStatus{}.OpenAPIModelName(), v1.ObjectMeta{}.OpenAPIModelName()},
+	}
+}
+
+func schema_pkg_apis_rbacgraph_v1alpha1_SubjectGraphReviewSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"subject": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref(SubjectRef{}.OpenAPIModelName()),
+						},
+					},
+					"selector": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref(Selector{}.OpenAPIModelName()),
+						},
+					},
+					"matchMode": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Possible enum values:\n - `\"all\"`\n - `\"any\"`",
+							Type:        []string{"string"},
+							Format:      "",
+							Enum:        []interface{}{"all", "any"},
+						},
+					},
+					"wildcardMode": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Possible enum values:\n - `\"exact\"`\n - `\"wildcard\"`",
+							Type:        []string{"string"},
+							Format:      "",
+							Enum:        []interface{}{"exact", "wildcard"},
+						},
+					},
+					"directOnly": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"boolean"},
+							Format: "",
+						},
+					},
+					"filterPhantomAPIs": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"boolean"},
+							Format: "",
+						},
+					},
+				},
+				Required: []string{"subject"},
+			},
+		},
+		Dependencies: []string{
+			Selector{}.OpenAPIModelName(), SubjectRef{}.OpenAPIModelName()},
+	}
+}
+
+func schema_pkg_apis_rbacgraph_v1alpha1_SubjectGraphReviewStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"subject": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref(SubjectRef{}.OpenAPIModelName()),
+						},
+					},
+					"resolvedSubjects": {
+						SchemaProps: spec.SchemaProps{
+							Type: []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: map[string]interface{}{},
+										Ref:     ref(SubjectRef{}.OpenAPIModelName()),
+									},
+								},
+							},
+						},
+					},
+					"matchedRoles": {
+						SchemaProps: spec.SchemaProps{
+							Default: 0,
+							Type:    []string{"integer"},
+							Format:  "int32",
+						},
+					},
+					"matchedBindings": {
+						SchemaProps: spec.SchemaProps{
+							Default: 0,
+							Type:    []string{"integer"},
+							Format:  "int32",
+						},
+					},
+					"graph": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref(Graph{}.OpenAPIModelName()),
+						},
+					},
+					"warnings": {
+						SchemaProps: spec.SchemaProps{
+							Type: []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: map[string]interface{}{},
+										Ref:     ref(SubjectWarning{}.OpenAPIModelName()),
+									},
+								},
+							},
+						},
+					},
+					"knownGaps": {
+						SchemaProps: spec.SchemaProps{
+							Type: []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: "",
+										Type:    []string{"string"},
+										Format:  "",
+									},
+								},
+							},
+						},
+					},
+				},
+				Required: []string{"subject", "matchedRoles", "matchedBindings", "graph"},
+			},
+		},
+		Dependencies: []string{
+			Graph{}.OpenAPIModelName(), SubjectRef{}.OpenAPIModelName(), SubjectWarning{}.OpenAPIModelName()},
+	}
+}
+
+func schema_pkg_apis_rbacgraph_v1alpha1_SubjectPermissionsView(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "SubjectPermissionsView returns the aggregated permissions of a subject (ServiceAccount, User, or Group) across all roles bound to it.",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref(v1.ObjectMeta{}.OpenAPIModelName()),
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref(SubjectPermissionsViewSpec{}.OpenAPIModelName()),
+						},
+					},
+					"status": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref(SubjectPermissionsViewStatus{}.OpenAPIModelName()),
+						},
+					},
+				},
+				Required: []string{"spec"},
+			},
+		},
+		Dependencies: []string{
+			SubjectPermissionsViewSpec{}.OpenAPIModelName(), SubjectPermissionsViewStatus{}.OpenAPIModelName(), v1.ObjectMeta{}.OpenAPIModelName()},
+	}
+}
+
+func schema_pkg_apis_rbacgraph_v1alpha1_SubjectPermissionsViewSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"subject": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref(SubjectRef{}.OpenAPIModelName()),
+						},
+					},
+					"selector": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref(Selector{}.OpenAPIModelName()),
+						},
+					},
+					"matchMode": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Possible enum values:\n - `\"all\"`\n - `\"any\"`",
+							Type:        []string{"string"},
+							Format:      "",
+							Enum:        []interface{}{"all", "any"},
+						},
+					},
+					"wildcardMode": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Possible enum values:\n - `\"exact\"`\n - `\"wildcard\"`",
+							Type:        []string{"string"},
+							Format:      "",
+							Enum:        []interface{}{"exact", "wildcard"},
+						},
+					},
+					"directOnly": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"boolean"},
+							Format: "",
+						},
+					},
+					"filterPhantomAPIs": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"boolean"},
+							Format: "",
+						},
+					},
+				},
+				Required: []string{"subject"},
+			},
+		},
+		Dependencies: []string{
+			Selector{}.OpenAPIModelName(), SubjectRef{}.OpenAPIModelName()},
+	}
+}
+
+func schema_pkg_apis_rbacgraph_v1alpha1_SubjectPermissionsViewStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"subject": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref(SubjectRef{}.OpenAPIModelName()),
+						},
+					},
+					"resolvedSubjects": {
+						SchemaProps: spec.SchemaProps{
+							Type: []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: map[string]interface{}{},
+										Ref:     ref(SubjectRef{}.OpenAPIModelName()),
+									},
+								},
+							},
+						},
+					},
+					"apiGroups": {
+						SchemaProps: spec.SchemaProps{
+							Type: []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: map[string]interface{}{},
+										Ref:     ref(APIGroupPermissions{}.OpenAPIModelName()),
+									},
+								},
+							},
+						},
+					},
+					"nonResourceUrls": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref(NonResourceURLPermissions{}.OpenAPIModelName()),
+						},
+					},
+					"grants": {
+						SchemaProps: spec.SchemaProps{
+							Type: []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: map[string]interface{}{},
+										Ref:     ref(AttributedGrant{}.OpenAPIModelName()),
+									},
+								},
+							},
+						},
+					},
+					"bindings": {
+						SchemaProps: spec.SchemaProps{
+							Type: []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: map[string]interface{}{},
+										Ref:     ref(SubjectBinding{}.OpenAPIModelName()),
+									},
+								},
+							},
+						},
+					},
+					"roles": {
+						SchemaProps: spec.SchemaProps{
+							Type: []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: map[string]interface{}{},
+										Ref:     ref(SubjectRoleSummary{}.OpenAPIModelName()),
+									},
+								},
+							},
+						},
+					},
+					"warnings": {
+						SchemaProps: spec.SchemaProps{
+							Type: []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: map[string]interface{}{},
+										Ref:     ref(SubjectWarning{}.OpenAPIModelName()),
+									},
+								},
+							},
+						},
+					},
+				},
+				Required: []string{"subject", "apiGroups", "grants", "bindings", "roles"},
+			},
+		},
+		Dependencies: []string{
+			APIGroupPermissions{}.OpenAPIModelName(), AttributedGrant{}.OpenAPIModelName(), NonResourceURLPermissions{}.OpenAPIModelName(), SubjectBinding{}.OpenAPIModelName(), SubjectRef{}.OpenAPIModelName(), SubjectRoleSummary{}.OpenAPIModelName(), SubjectWarning{}.OpenAPIModelName()},
+	}
+}
+
+func schema_pkg_apis_rbacgraph_v1alpha1_SubjectRef(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "SubjectRef identifies an RBAC subject. Namespace is populated only for ServiceAccount.",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Possible enum values:\n - `\"Group\"`\n - `\"ServiceAccount\"`\n - `\"User\"`",
+							Default:     "",
+							Type:        []string{"string"},
+							Format:      "",
+							Enum:        []interface{}{"Group", "ServiceAccount", "User"},
+						},
+					},
+					"name": {
+						SchemaProps: spec.SchemaProps{
+							Default: "",
+							Type:    []string{"string"},
+							Format:  "",
+						},
+					},
+					"namespace": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+				},
+				Required: []string{"kind", "name"},
+			},
+		},
+	}
+}
+
+func schema_pkg_apis_rbacgraph_v1alpha1_SubjectRoleSummary(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"ref": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref(RoleRef{}.OpenAPIModelName()),
+						},
+					},
+					"assessment": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref(Assessment{}.OpenAPIModelName()),
+						},
+					},
+					"phantom": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"boolean"},
+							Format: "",
+						},
+					},
+				},
+				Required: []string{"ref"},
+			},
+		},
+		Dependencies: []string{
+			Assessment{}.OpenAPIModelName(), RoleRef{}.OpenAPIModelName()},
+	}
+}
+
+func schema_pkg_apis_rbacgraph_v1alpha1_SubjectWarning(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"code": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Possible enum values:\n - `\"BrokenBinding\"`\n - `\"ImpersonationCapable\"`\n - `\"LargeResponse\"`",
+							Default:     "",
+							Type:        []string{"string"},
+							Format:      "",
+							Enum:        []interface{}{"BrokenBinding", "ImpersonationCapable", "LargeResponse"},
+						},
+					},
+					"message": {
+						SchemaProps: spec.SchemaProps{
+							Default: "",
+							Type:    []string{"string"},
+							Format:  "",
+						},
+					},
+					"subjects": {
+						SchemaProps: spec.SchemaProps{
+							Type: []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: map[string]interface{}{},
+										Ref:     ref(SubjectRef{}.OpenAPIModelName()),
+									},
+								},
+							},
+						},
+					},
+					"binding": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref(BindingRef{}.OpenAPIModelName()),
+						},
+					},
+					"roleRef": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref(RoleRef{}.OpenAPIModelName()),
+						},
+					},
+					"roleCount": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"integer"},
+							Format: "int32",
+						},
+					},
+				},
+				Required: []string{"code", "message"},
+			},
+		},
+		Dependencies: []string{
+			BindingRef{}.OpenAPIModelName(), RoleRef{}.OpenAPIModelName(), SubjectRef{}.OpenAPIModelName()},
+	}
+}
+
+func schema_pkg_apis_rbacgraph_v1alpha1_SubjectsBySelectorGraph(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "SubjectsBySelectorGraph returns the subject-rooted graph of bindings, roles, and matched rules for a selector.",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref(v1.ObjectMeta{}.OpenAPIModelName()),
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref(SubjectsBySelectorGraphSpec{}.OpenAPIModelName()),
+						},
+					},
+					"status": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref(SubjectsBySelectorGraphStatus{}.OpenAPIModelName()),
+						},
+					},
+				},
+				Required: []string{"spec"},
+			},
+		},
+		Dependencies: []string{
+			SubjectsBySelectorGraphSpec{}.OpenAPIModelName(), SubjectsBySelectorGraphStatus{}.OpenAPIModelName(), v1.ObjectMeta{}.OpenAPIModelName()},
+	}
+}
+
+func schema_pkg_apis_rbacgraph_v1alpha1_SubjectsBySelectorGraphSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"selector": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref(Selector{}.OpenAPIModelName()),
+						},
+					},
+					"matchMode": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Possible enum values:\n - `\"all\"`\n - `\"any\"`",
+							Type:        []string{"string"},
+							Format:      "",
+							Enum:        []interface{}{"all", "any"},
+						},
+					},
+					"wildcardMode": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Possible enum values:\n - `\"exact\"`\n - `\"wildcard\"`",
+							Type:        []string{"string"},
+							Format:      "",
+							Enum:        []interface{}{"exact", "wildcard"},
+						},
+					},
+					"expandImplicitGroups": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"boolean"},
+							Format: "",
+						},
+					},
+					"filterPhantomAPIs": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"boolean"},
+							Format: "",
+						},
+					},
+				},
+				Required: []string{"selector"},
+			},
+		},
+		Dependencies: []string{
+			Selector{}.OpenAPIModelName()},
+	}
+}
+
+func schema_pkg_apis_rbacgraph_v1alpha1_SubjectsBySelectorGraphStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"selector": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref(Selector{}.OpenAPIModelName()),
+						},
+					},
+					"expandedImplicitGroups": {
+						SchemaProps: spec.SchemaProps{
+							Default: false,
+							Type:    []string{"boolean"},
+							Format:  "",
+						},
+					},
+					"matchedRoles": {
+						SchemaProps: spec.SchemaProps{
+							Default: 0,
+							Type:    []string{"integer"},
+							Format:  "int32",
+						},
+					},
+					"matchedBindings": {
+						SchemaProps: spec.SchemaProps{
+							Default: 0,
+							Type:    []string{"integer"},
+							Format:  "int32",
+						},
+					},
+					"matchedSubjects": {
+						SchemaProps: spec.SchemaProps{
+							Default: 0,
+							Type:    []string{"integer"},
+							Format:  "int32",
+						},
+					},
+					"graph": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref(Graph{}.OpenAPIModelName()),
+						},
+					},
+					"warnings": {
+						SchemaProps: spec.SchemaProps{
+							Type: []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: map[string]interface{}{},
+										Ref:     ref(SubjectWarning{}.OpenAPIModelName()),
+									},
+								},
+							},
+						},
+					},
+				},
+				Required: []string{"selector", "expandedImplicitGroups", "matchedRoles", "matchedBindings", "matchedSubjects", "graph"},
+			},
+		},
+		Dependencies: []string{
+			Graph{}.OpenAPIModelName(), Selector{}.OpenAPIModelName(), SubjectWarning{}.OpenAPIModelName()},
+	}
+}
+
+func schema_pkg_apis_rbacgraph_v1alpha1_SubjectsBySelectorView(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "SubjectsBySelectorView returns subjects matching a selector, with role and binding provenance per grant.",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref(v1.ObjectMeta{}.OpenAPIModelName()),
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref(SubjectsBySelectorViewSpec{}.OpenAPIModelName()),
+						},
+					},
+					"status": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref(SubjectsBySelectorViewStatus{}.OpenAPIModelName()),
+						},
+					},
+				},
+				Required: []string{"spec"},
+			},
+		},
+		Dependencies: []string{
+			SubjectsBySelectorViewSpec{}.OpenAPIModelName(), SubjectsBySelectorViewStatus{}.OpenAPIModelName(), v1.ObjectMeta{}.OpenAPIModelName()},
+	}
+}
+
+func schema_pkg_apis_rbacgraph_v1alpha1_SubjectsBySelectorViewSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"selector": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref(Selector{}.OpenAPIModelName()),
+						},
+					},
+					"matchMode": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Possible enum values:\n - `\"all\"`\n - `\"any\"`",
+							Type:        []string{"string"},
+							Format:      "",
+							Enum:        []interface{}{"all", "any"},
+						},
+					},
+					"wildcardMode": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Possible enum values:\n - `\"exact\"`\n - `\"wildcard\"`",
+							Type:        []string{"string"},
+							Format:      "",
+							Enum:        []interface{}{"exact", "wildcard"},
+						},
+					},
+					"expandImplicitGroups": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"boolean"},
+							Format: "",
+						},
+					},
+					"filterPhantomAPIs": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"boolean"},
+							Format: "",
+						},
+					},
+				},
+				Required: []string{"selector"},
+			},
+		},
+		Dependencies: []string{
+			Selector{}.OpenAPIModelName()},
+	}
+}
+
+func schema_pkg_apis_rbacgraph_v1alpha1_SubjectsBySelectorViewStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"selector": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref(Selector{}.OpenAPIModelName()),
+						},
+					},
+					"expandedImplicitGroups": {
+						SchemaProps: spec.SchemaProps{
+							Default: false,
+							Type:    []string{"boolean"},
+							Format:  "",
+						},
+					},
+					"subjects": {
+						SchemaProps: spec.SchemaProps{
+							Type: []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: map[string]interface{}{},
+										Ref:     ref(ScopedSubject{}.OpenAPIModelName()),
+									},
+								},
+							},
+						},
+					},
+					"warnings": {
+						SchemaProps: spec.SchemaProps{
+							Type: []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: map[string]interface{}{},
+										Ref:     ref(SubjectWarning{}.OpenAPIModelName()),
+									},
+								},
+							},
+						},
+					},
+				},
+				Required: []string{"selector", "expandedImplicitGroups", "subjects"},
+			},
+		},
+		Dependencies: []string{
+			ScopedSubject{}.OpenAPIModelName(), Selector{}.OpenAPIModelName(), SubjectWarning{}.OpenAPIModelName()},
 	}
 }
 
