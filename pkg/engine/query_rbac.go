@@ -179,23 +179,37 @@ func (qc *queryContext) annotatePhantomRefs(refs []api.RuleRef) {
 
 		// Check resource (using "resource/subresource" form for lookup).
 		lookupResource := ref.Resource
+		hasSubresource := ref.Subresource != "" || strings.Contains(ref.Resource, "/")
 		if ref.Subresource != "" && !strings.Contains(ref.Resource, "/") {
 			lookupResource = ref.Resource + "/" + ref.Subresource
 		}
-		if lookupResource != "" { //nolint:nestif // multi-level resource/subresource lookup
-			if _, resourceExists := groupResources[lookupResource]; !resourceExists {
-				baseResource := ref.Resource
-				if idx := strings.Index(baseResource, "/"); idx >= 0 {
-					baseResource = baseResource[:idx]
-				}
-				if _, baseExists := groupResources[baseResource]; !baseExists {
-					ref.Phantom = true
-					qc.addWarning(fmt.Sprintf(
-						"resource %q in API group %q is not registered in the cluster",
-						lookupResource, ref.APIGroup,
-					))
-				}
-			}
+		if lookupResource == "" {
+			continue
+		}
+		if _, resourceExists := groupResources[lookupResource]; resourceExists {
+			continue
+		}
+
+		if hasSubresource {
+			ref.Phantom = true
+			qc.addWarning(fmt.Sprintf(
+				"subresource %q in API group %q is not registered in the cluster",
+				lookupResource, ref.APIGroup,
+			))
+
+			continue
+		}
+
+		baseResource := ref.Resource
+		if idx := strings.Index(baseResource, "/"); idx >= 0 {
+			baseResource = baseResource[:idx]
+		}
+		if _, baseExists := groupResources[baseResource]; !baseExists {
+			ref.Phantom = true
+			qc.addWarning(fmt.Sprintf(
+				"resource %q in API group %q is not registered in the cluster",
+				lookupResource, ref.APIGroup,
+			))
 		}
 	}
 }
