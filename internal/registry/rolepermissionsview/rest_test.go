@@ -434,3 +434,82 @@ func TestCreate_FilterPhantomAPIs_Disabled(t *testing.T) {
 		t.Errorf("expected phantom flag to be set on the phantom resource")
 	}
 }
+
+// TestCreate_FilterPhantomSubresource covers the bug where isPhantomResource
+// falsely accepted metrics.k8s.io/pods/exec because metrics.k8s.io/pods
+// (PodMetrics) existed in discovery — even though pods/exec is a core-only
+// subresource. After the fix, subresource refs require exact discovery match.
+func TestCreate_FilterPhantomSubresource(t *testing.T) {
+	r := newTestRESTWithDiscovery(
+		map[indexer.RoleID]*indexer.RoleRecord{
+			"clusterrole:metrics-reader": {
+				Kind: "ClusterRole",
+				Name: "metrics-reader",
+				Rules: []rbacv1.PolicyRule{
+					{APIGroups: []string{"metrics.k8s.io"}, Resources: []string{"pods/exec"}, Verbs: []string{"get"}},
+				},
+			},
+		},
+		// metrics.k8s.io has pods (base PodMetrics) but NOT pods/exec.
+		map[string]map[string][]string{
+			"metrics.k8s.io": {"pods": {"get", "list"}},
+		},
+	)
+
+	view := &rbacgraph.RolePermissionsView{
+		Spec: rbacgraph.RolePermissionsViewSpec{
+			Role:              rbacgraph.RoleRef{Kind: "ClusterRole", Name: "metrics-reader"},
+			FilterPhantomAPIs: true,
+		},
+	}
+
+	obj, err := r.Create(context.Background(), view, nil, &metav1.CreateOptions{})
+	if err != nil {
+		t.Fatalf("Create() error: %v", err)
+	}
+	result := obj.(*rbacgraph.RolePermissionsView)
+
+	// With FilterPhantomAPIs=true and only the phantom subresource rule, the
+	// resource must be removed from the output. Before the fix it would leak
+	// through because base "pods" exists in metrics.k8s.io.
+	if len(result.Status.APIGroups) != 0 {
+		t.Errorf("expected metrics.k8s.io/pods/exec phantom to be filtered out, got APIGroups=%+v",
+			result.Status.APIGroups)
+	}
+}
+
+func TestCreate_PhantomSubresourceMarkedWhenFilterDisabled(t *testing.T) {
+	r := newTestRESTWithDiscovery(
+		map[indexer.RoleID]*indexer.RoleRecord{
+			"clusterrole:metrics-reader": {
+				Kind: "ClusterRole",
+				Name: "metrics-reader",
+				Rules: []rbacv1.PolicyRule{
+					{APIGroups: []string{"metrics.k8s.io"}, Resources: []string{"pods/exec"}, Verbs: []string{"get"}},
+				},
+			},
+		},
+		map[string]map[string][]string{
+			"metrics.k8s.io": {"pods": {"get", "list"}},
+		},
+	)
+
+	view := &rbacgraph.RolePermissionsView{
+		Spec: rbacgraph.RolePermissionsViewSpec{
+			Role: rbacgraph.RoleRef{Kind: "ClusterRole", Name: "metrics-reader"},
+		},
+	}
+
+	obj, err := r.Create(context.Background(), view, nil, &metav1.CreateOptions{})
+	if err != nil {
+		t.Fatalf("Create() error: %v", err)
+	}
+	result := obj.(*rbacgraph.RolePermissionsView)
+
+	if len(result.Status.APIGroups) != 1 || len(result.Status.APIGroups[0].Resources) != 1 {
+		t.Fatalf("expected one (group, resource) entry, got %+v", result.Status.APIGroups)
+	}
+	if !result.Status.APIGroups[0].Resources[0].Phantom {
+		t.Errorf("expected Phantom=true for metrics.k8s.io/pods/exec (base-only fallback should not save it)")
+	}
+}

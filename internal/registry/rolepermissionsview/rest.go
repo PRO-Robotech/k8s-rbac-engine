@@ -222,46 +222,27 @@ func expandGroups(apiGroups []string, discovery *indexer.APIDiscoveryCache, expa
 	if !expandWildcards || discovery == nil || !slices.Contains(apiGroups, "*") {
 		return apiGroups
 	}
-	groups := make([]string, 0, len(discovery.ResourcesByGroup))
-	for g := range discovery.ResourcesByGroup {
-		groups = append(groups, g)
-	}
-	slices.Sort(groups)
 
-	return groups
+	return engine.ResolveDiscoveryGroups("*", discovery)
 }
 
 func expandResources(apiGroup string, resources []string, discovery *indexer.APIDiscoveryCache, expandWildcards bool) []string {
 	if !expandWildcards || discovery == nil || !slices.Contains(resources, "*") {
 		return resources
 	}
-	groupResources := discovery.ResourcesByGroup[apiGroup]
-	if len(groupResources) == 0 {
-		return nil
-	}
-	out := make([]string, 0, len(groupResources))
-	for r := range groupResources {
-		out = append(out, r)
-	}
-	slices.Sort(out)
 
-	return out
+	return engine.ResolveDiscoveryResources(apiGroup, "*", discovery)
 }
 
 func expandVerbs(apiGroup, resource string, verbs []string, discovery *indexer.APIDiscoveryCache, expandWildcards bool) []string {
 	if !expandWildcards || discovery == nil || !slices.Contains(verbs, "*") {
 		return verbs
 	}
-	groupVerbs, ok := discovery.VerbsByGroupResource[apiGroup]
-	if !ok {
-		return verbs
-	}
-	supported, ok := groupVerbs[resource]
-	if !ok {
+	if !engine.IsResourceInDiscovery(discovery, apiGroup, resource) {
 		return verbs
 	}
 
-	return supported
+	return engine.ResolveDiscoveryVerbs(apiGroup, resource, "*", discovery)
 }
 
 func hasSelectorFilter(sel rbacgraph.Selector) bool {
@@ -437,39 +418,10 @@ func isPhantomResource(discovery *indexer.APIDiscoveryCache, apiGroup, resource 
 	if discovery == nil || resource == "*" || apiGroup == "*" {
 		return false
 	}
-	groupResources, groupExists := discovery.ResourcesByGroup[apiGroup]
-	if !groupExists {
-		return true // entire API group missing from cluster
-	}
-	if _, resourceExists := groupResources[resource]; resourceExists {
-		return false
-	}
-	if base, _, hasSub := strings.Cut(resource, "/"); hasSub {
-		if _, baseExists := groupResources[base]; baseExists {
-			return false
-		}
-	}
 
-	return true
+	return !engine.IsResourceInDiscovery(discovery, apiGroup, resource)
 }
 
 func isVerbSupported(discovery *indexer.APIDiscoveryCache, apiGroup, resource, verb string) bool {
-	if discovery == nil {
-		return true
-	}
-	groupVerbs, ok := discovery.VerbsByGroupResource[apiGroup]
-	if !ok {
-		return true
-	}
-	supported, ok := groupVerbs[resource]
-	if !ok {
-		return true
-	}
-	for _, v := range supported {
-		if strings.EqualFold(v, verb) {
-			return true
-		}
-	}
-
-	return false
+	return engine.IsVerbSupportedByDiscovery(discovery, apiGroup, resource, verb)
 }

@@ -128,7 +128,7 @@ func annotateUnsupportedVerbs(refs []api.RuleRef, discovery *indexer.APIDiscover
 		}
 		groups := []string{ref.APIGroup}
 		if ref.APIGroup == "*" {
-			groups = resolveDiscoveryGroups("*", discovery)
+			groups = ResolveDiscoveryGroups("*", discovery)
 		}
 		supported := false
 		resourceFound := false
@@ -160,17 +160,17 @@ func annotateUnsupportedVerbs(refs []api.RuleRef, discovery *indexer.APIDiscover
 // resolveWildcardRef expands a single wildcard ref to a list of concrete refs
 // based on discovery. Honors maxExpandedRefsPerParent as an early-exit limit.
 func resolveWildcardRef(ref *api.RuleRef, discovery *indexer.APIDiscoveryCache) []api.RuleRef {
-	groups := resolveDiscoveryGroups(ref.APIGroup, discovery)
+	groups := ResolveDiscoveryGroups(ref.APIGroup, discovery)
 	var result []api.RuleRef
 
 	for _, group := range groups {
-		resources := resolveDiscoveryResources(group, ref.Resource, discovery)
+		resources := ResolveDiscoveryResources(group, ref.Resource, discovery)
 		for _, resource := range resources {
 			fullResource := resource
 			if ref.Subresource != "" {
 				fullResource = resource + "/" + ref.Subresource
 			}
-			verbs := resolveDiscoveryVerbs(group, fullResource, ref.Verb, discovery)
+			verbs := ResolveDiscoveryVerbs(group, fullResource, ref.Verb, discovery)
 			for _, verb := range verbs {
 				result = append(result, api.RuleRef{
 					APIGroup:      group,
@@ -189,7 +189,9 @@ func resolveWildcardRef(ref *api.RuleRef, discovery *indexer.APIDiscoveryCache) 
 	return result
 }
 
-func resolveDiscoveryGroups(apiGroup string, discovery *indexer.APIDiscoveryCache) []string {
+// ResolveDiscoveryGroups returns the apiGroup as-is when concrete, or the
+// full set of groups in discovery when the input is "*".
+func ResolveDiscoveryGroups(apiGroup string, discovery *indexer.APIDiscoveryCache) []string {
 	if apiGroup != "*" {
 		return []string{apiGroup}
 	}
@@ -202,7 +204,9 @@ func resolveDiscoveryGroups(apiGroup string, discovery *indexer.APIDiscoveryCach
 	return groups
 }
 
-func resolveDiscoveryResources(group, resource string, discovery *indexer.APIDiscoveryCache) []string {
+// ResolveDiscoveryResources returns the resource as-is when concrete, or the
+// full set of resources for the group when input is "*".
+func ResolveDiscoveryResources(group, resource string, discovery *indexer.APIDiscoveryCache) []string {
 	if resource != "*" {
 		return []string{resource}
 	}
@@ -219,7 +223,8 @@ func resolveDiscoveryResources(group, resource string, discovery *indexer.APIDis
 	return resources
 }
 
-func resolveDiscoveryVerbs(group, resource, verb string, discovery *indexer.APIDiscoveryCache) []string {
+// ResolveDiscoveryVerbs resolves a verb against discovery's supported list.
+func ResolveDiscoveryVerbs(group, resource, verb string, discovery *indexer.APIDiscoveryCache) []string {
 	groupVerbs, groupKnown := discovery.VerbsByGroupResource[group]
 
 	if verb != "*" {
@@ -253,4 +258,42 @@ func resolveDiscoveryVerbs(group, resource, verb string, discovery *indexer.APID
 	}
 
 	return nil
+}
+
+// IsResourceInDiscovery returns true when the (apiGroup, resource) tuple is
+// registered in discovery.
+func IsResourceInDiscovery(discovery *indexer.APIDiscoveryCache, apiGroup, resource string) bool {
+	if discovery == nil || apiGroup == "*" || resource == "*" {
+		return true
+	}
+	groupResources, ok := discovery.ResourcesByGroup[apiGroup]
+	if !ok {
+		return false
+	}
+	_, exists := groupResources[resource]
+
+	return exists
+}
+
+// IsVerbSupportedByDiscovery returns true when the verb is in the supported
+// list for (apiGroup, resource).
+func IsVerbSupportedByDiscovery(discovery *indexer.APIDiscoveryCache, apiGroup, resource, verb string) bool {
+	if discovery == nil {
+		return true
+	}
+	groupVerbs, groupKnown := discovery.VerbsByGroupResource[apiGroup]
+	if !groupKnown {
+		return true
+	}
+	supported, resourceKnown := groupVerbs[resource]
+	if !resourceKnown {
+		return true
+	}
+	for _, v := range supported {
+		if strings.EqualFold(v, verb) {
+			return true
+		}
+	}
+
+	return false
 }
