@@ -224,7 +224,9 @@ func (c *subjectQueryContext) ensureRoleHit(ref indexer.RoleRefKey, role *indexe
 }
 
 // matchRoleRules applies the reverse-query selector to the role's rules and
-// returns the matching RuleRefs. Wildcards follow c.wildcardMode.
+// returns the matching RuleRefs. When discovery is available, refs are
+// annotated with Phantom/UnsupportedVerb and wildcards are expanded into
+// ExpandedRefs.
 func (c *subjectQueryContext) matchRoleRules(role *indexer.RoleRecord) []api.RuleRef {
 	refs := make([]api.RuleRef, 0)
 	for idx, rule := range role.Rules {
@@ -241,8 +243,25 @@ func (c *subjectQueryContext) matchRoleRules(role *indexer.RoleRecord) []api.Rul
 		}
 		refs = append(refs, result.RuleRefs...)
 	}
+	if c.discovery != nil {
+		annotatePhantomRefs(refs, c.discovery, dropWarning)
+		if c.filterPhantom {
+			refs = filterPhantomRefs(refs)
+		}
+		expandWildcardRefs(refs, c.discovery, c.emitExpansionTruncated)
+		annotateUnsupportedVerbs(refs, c.discovery)
+	}
 
 	return refs
+}
+
+func dropWarning(_ string) {}
+
+func (c *subjectQueryContext) emitExpansionTruncated(msg string) {
+	c.addWarning(api.SubjectWarning{
+		Code:    api.SubjectWarningCodeExpansionTruncated,
+		Message: msg,
+	})
 }
 
 // --- Warnings ---

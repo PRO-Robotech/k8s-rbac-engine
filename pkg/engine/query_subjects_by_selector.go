@@ -15,7 +15,7 @@ import (
 func (e *Engine) QuerySubjectsBySelector(
 	snapshot *indexer.Snapshot,
 	spec api.SubjectsBySelectorViewSpec,
-	_ *indexer.APIDiscoveryCache,
+	discovery *indexer.APIDiscoveryCache,
 ) api.SubjectsBySelectorViewStatus {
 	normalized := spec
 	normalized.EnsureDefaults()
@@ -31,6 +31,7 @@ func (e *Engine) QuerySubjectsBySelector(
 		return status
 	}
 
+	warnings := newExpansionWarningSink()
 	agg := newScopedSubjectAggregator(e.ReportLookup)
 	for _, roleID := range candidates {
 		role, ok := snapshot.RolesByID[roleID]
@@ -38,6 +39,14 @@ func (e *Engine) QuerySubjectsBySelector(
 			continue
 		}
 		matchedRefs := matchRoleAgainstSelectorSpec(role, normalized)
+		if discovery != nil {
+			annotatePhantomRefs(matchedRefs, discovery, dropWarning)
+			if normalized.FilterPhantomAPIs {
+				matchedRefs = filterPhantomRefs(matchedRefs)
+			}
+			expandWildcardRefs(matchedRefs, discovery, warnings.emit)
+			annotateUnsupportedVerbs(matchedRefs, discovery)
+		}
 		if len(matchedRefs) == 0 {
 			continue
 		}
@@ -45,8 +54,29 @@ func (e *Engine) QuerySubjectsBySelector(
 	}
 
 	status.Subjects = agg.finalize()
+	status.Warnings = warnings.warnings
 
 	return status
+}
+
+type expansionWarningSink struct {
+	warnings []api.SubjectWarning
+	seen     map[string]struct{}
+}
+
+func newExpansionWarningSink() *expansionWarningSink {
+	return &expansionWarningSink{seen: make(map[string]struct{})}
+}
+
+func (s *expansionWarningSink) emit(msg string) {
+	if _, ok := s.seen[msg]; ok {
+		return
+	}
+	s.seen[msg] = struct{}{}
+	s.warnings = append(s.warnings, api.SubjectWarning{
+		Code:    api.SubjectWarningCodeExpansionTruncated,
+		Message: msg,
+	})
 }
 
 // collectSubjectsForRole records grants for each subject of every binding that references the role.
@@ -206,26 +236,30 @@ func (a *scopedSubjectAggregator) add(
 	if _, seen := acc.roleSet[roleID]; !seen {
 		acc.roleSet[roleID] = lookupAssessmentForRole(a.reportLookup, role)
 	}
-	for i := range matchedRefs {
-		grant := attributedGrantFromRef(&matchedRefs[i], sourceRole, sourceBinding)
-		gk := grantDedupeKey{
-			sourceRoleKind: string(grant.SourceRole.Kind),
-			sourceRoleNs:   grant.SourceRole.Namespace,
-			sourceRoleName: grant.SourceRole.Name,
-			sourceBindKind: string(grant.SourceBinding.Kind),
-			sourceBindNs:   grant.SourceBinding.Namespace,
-			sourceBindName: grant.SourceBinding.Name,
-			apiGroup:       grant.APIGroup,
-			resource:       grant.Resource,
-			verb:           grant.Verb,
-			nonResourceURL: grant.NonResourceURL,
-		}
-		if _, dup := acc.grantSeen[gk]; dup {
-			continue
-		}
-		acc.grantSeen[gk] = struct{}{}
-		acc.grants = append(acc.grants, grant)
+	walkExpandedOrOriginal(matchedRefs, func(ref *api.RuleRef) {
+		acc.appendGrant(ref, sourceRole, sourceBinding)
+	})
+}
+
+func (acc *scopedSubjectAcc) appendGrant(ref *api.RuleRef, sourceRole api.RoleRef, sourceBinding api.BindingRef) {
+	grant := attributedGrantFromRef(ref, sourceRole, sourceBinding)
+	gk := grantDedupeKey{
+		sourceRoleKind: string(grant.SourceRole.Kind),
+		sourceRoleNs:   grant.SourceRole.Namespace,
+		sourceRoleName: grant.SourceRole.Name,
+		sourceBindKind: string(grant.SourceBinding.Kind),
+		sourceBindNs:   grant.SourceBinding.Namespace,
+		sourceBindName: grant.SourceBinding.Name,
+		apiGroup:       grant.APIGroup,
+		resource:       grant.Resource,
+		verb:           grant.Verb,
+		nonResourceURL: grant.NonResourceURL,
 	}
+	if _, dup := acc.grantSeen[gk]; dup {
+		return
+	}
+	acc.grantSeen[gk] = struct{}{}
+	acc.grants = append(acc.grants, grant)
 }
 
 func (a *scopedSubjectAggregator) finalize() []api.ScopedSubject {

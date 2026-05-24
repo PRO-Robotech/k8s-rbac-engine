@@ -10,7 +10,7 @@ import (
 func (e *Engine) QuerySubjectsBySelectorGraph(
 	snapshot *indexer.Snapshot,
 	spec api.SubjectsBySelectorGraphSpec,
-	_ *indexer.APIDiscoveryCache,
+	discovery *indexer.APIDiscoveryCache,
 ) api.SubjectsBySelectorGraphStatus {
 	normalized := spec
 	normalized.EnsureDefaults()
@@ -26,6 +26,7 @@ func (e *Engine) QuerySubjectsBySelectorGraph(
 		return status
 	}
 
+	warnings := newExpansionWarningSink()
 	g := newGraphBuilder()
 	for _, roleID := range candidates {
 		role, ok := snapshot.RolesByID[roleID]
@@ -33,6 +34,14 @@ func (e *Engine) QuerySubjectsBySelectorGraph(
 			continue
 		}
 		matchedRefs := matchRoleForGraphSelector(role, normalized)
+		if discovery != nil {
+			annotatePhantomRefs(matchedRefs, discovery, dropWarning)
+			if normalized.FilterPhantomAPIs {
+				matchedRefs = filterPhantomRefs(matchedRefs)
+			}
+			expandWildcardRefs(matchedRefs, discovery, warnings.emit)
+			annotateUnsupportedVerbs(matchedRefs, discovery)
+		}
 		if len(matchedRefs) == 0 {
 			continue
 		}
@@ -44,6 +53,7 @@ func (e *Engine) QuerySubjectsBySelectorGraph(
 	status.MatchedRoles = countNodesOfTypes(graph.Nodes, api.GraphNodeTypeRole, api.GraphNodeTypeClusterRole)
 	status.MatchedBindings = countNodesOfTypes(graph.Nodes, api.GraphNodeTypeRoleBinding, api.GraphNodeTypeClusterRoleBinding)
 	status.MatchedSubjects = countNodesOfTypes(graph.Nodes, api.GraphNodeTypeUser, api.GraphNodeTypeGroup, api.GraphNodeTypeServiceAccount)
+	status.Warnings = warnings.warnings
 
 	return status
 }

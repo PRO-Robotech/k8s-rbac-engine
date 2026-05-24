@@ -1704,11 +1704,12 @@
           "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.BindingRef"
         },
         "code": {
-          "description": "Possible enum values:\n - `\"BrokenBinding\"`\n - `\"ImpersonationCapable\"`\n - `\"LargeResponse\"`",
+          "description": "Possible enum values:\n - `\"BrokenBinding\"`\n - `\"ExpansionTruncated\"`\n - `\"ImpersonationCapable\"`\n - `\"LargeResponse\"`",
           "type": "string",
           "default": "",
           "enum": [
             "BrokenBinding",
+            "ExpansionTruncated",
             "ImpersonationCapable",
             "LargeResponse"
           ]

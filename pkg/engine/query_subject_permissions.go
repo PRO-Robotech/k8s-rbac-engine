@@ -28,27 +28,26 @@ type resourceKey struct {
 // buildAPIGroupsAggregated produces the forward-compatible permission tree
 // — apiGroup → resource → verb → granted. Rules[] is intentionally empty
 // in the reverse projection: full provenance lives in Status.Grants.
+// Wildcard refs are walked through ExpandedRefs so the tree shows concrete
+// resources/verbs, matching the grants[] projection.
 func (c *subjectQueryContext) buildAPIGroupsAggregated() []api.APIGroupPermissions {
 	granted := make(map[resourceKey]map[string]struct{})
+	addRef := func(ref *api.RuleRef) {
+		if len(ref.NonResourceURLs) > 0 || ref.Verb == "" || ref.Resource == "" {
+			return
+		}
+		key := resourceKey{apiGroup: ref.APIGroup, resource: ref.Resource}
+		if granted[key] == nil {
+			granted[key] = make(map[string]struct{})
+		}
+		granted[key][ref.Verb] = struct{}{}
+	}
 
 	for _, hit := range c.roleHits {
 		if hit.role == nil {
 			continue
 		}
-		for i := range hit.matchedRefs {
-			ref := &hit.matchedRefs[i]
-			if len(ref.NonResourceURLs) > 0 {
-				continue
-			}
-			if ref.Verb == "" || ref.Resource == "" {
-				continue
-			}
-			key := resourceKey{apiGroup: ref.APIGroup, resource: ref.Resource}
-			if granted[key] == nil {
-				granted[key] = make(map[string]struct{})
-			}
-			granted[key][ref.Verb] = struct{}{}
-		}
+		walkExpandedOrOriginal(hit.matchedRefs, addRef)
 	}
 	if len(granted) == 0 {
 		return []api.APIGroupPermissions{}
@@ -141,9 +140,9 @@ func (c *subjectQueryContext) buildAttributedGrants() []api.AttributedGrant {
 				continue
 			}
 			bindingSource := bindingRefFromRecord(attr.binding)
-			for i := range hit.matchedRefs {
-				grants = append(grants, attributedGrantFromRef(&hit.matchedRefs[i], source, bindingSource))
-			}
+			walkExpandedOrOriginal(hit.matchedRefs, func(ref *api.RuleRef) {
+				grants = append(grants, attributedGrantFromRef(ref, source, bindingSource))
+			})
 		}
 	}
 	slices.SortFunc(grants, compareAttributedGrant)
@@ -256,6 +255,20 @@ func (c *subjectQueryContext) buildRoleSummaries() []api.SubjectRoleSummary {
 	})
 
 	return roles
+}
+
+func walkExpandedOrOriginal(refs []api.RuleRef, fn func(*api.RuleRef)) {
+	for i := range refs {
+		ref := &refs[i]
+		if len(ref.ExpandedRefs) > 0 {
+			for j := range ref.ExpandedRefs {
+				fn(&ref.ExpandedRefs[j])
+			}
+
+			continue
+		}
+		fn(ref)
+	}
 }
 
 func cloneSubjectRefs(refs []api.SubjectRef) []api.SubjectRef {

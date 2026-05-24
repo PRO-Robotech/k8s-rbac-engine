@@ -449,6 +449,7 @@ const (
 	SubjectWarningCodeImpersonationCapable SubjectWarningCode = "ImpersonationCapable"
 	SubjectWarningCodeBrokenBinding        SubjectWarningCode = "BrokenBinding"
 	SubjectWarningCodeLargeResponse        SubjectWarningCode = "LargeResponse"
+	SubjectWarningCodeExpansionTruncated   SubjectWarningCode = "ExpansionTruncated"
 )
 
 // SubjectRef identifies an RBAC subject. Namespace is populated only for ServiceAccount.

@@ -2140,11 +2140,11 @@ func schema_pkg_apis_rbacgraph_v1alpha1_SubjectWarning(ref common.ReferenceCallb
 				Properties: map[string]spec.Schema{
 					"code": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Possible enum values:\n - `\"BrokenBinding\"`\n - `\"ImpersonationCapable\"`\n - `\"LargeResponse\"`",
+							Description: "Possible enum values:\n - `\"BrokenBinding\"`\n - `\"ExpansionTruncated\"`\n - `\"ImpersonationCapable\"`\n - `\"LargeResponse\"`",
 							Default:     "",
 							Type:        []string{"string"},
 							Format:      "",
-							Enum:        []interface{}{"BrokenBinding", "ImpersonationCapable", "LargeResponse"},
+							Enum:        []interface{}{"BrokenBinding", "ExpansionTruncated", "ImpersonationCapable", "LargeResponse"},
 						},
 					},
 					"message": {
