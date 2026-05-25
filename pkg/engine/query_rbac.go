@@ -40,15 +40,7 @@ func (qc *queryContext) buildRBACGraph(roleIDs []indexer.RoleID) {
 			continue
 		}
 
-		matches := matchRole(role, qc.spec)
-		if qc.discovery != nil {
-			annotatePhantomRefs(matches, qc.discovery, qc.addWarning)
-			if qc.spec.FilterPhantomAPIs {
-				matches = filterPhantomRefs(matches)
-			}
-			expandWildcardRefs(matches, qc.discovery, qc.addWarning)
-			annotateUnsupportedVerbs(matches, qc.discovery)
-		}
+		matches := qc.processMatches(matchRole(role, qc.spec))
 		if len(matches) == 0 {
 			continue
 		}
@@ -68,7 +60,7 @@ func (qc *queryContext) buildRBACGraph(roleIDs []indexer.RoleID) {
 				continue
 			}
 
-			sourceMatches := matchRole(sourceRole, qc.spec)
+			sourceMatches := qc.processMatches(matchRole(sourceRole, qc.spec))
 			if len(sourceMatches) == 0 {
 				continue
 			}
@@ -149,6 +141,20 @@ func (qc *queryContext) buildRBACGraph(roleIDs []indexer.RoleID) {
 			}
 		}
 	}
+}
+
+func (qc *queryContext) processMatches(refs []api.RuleRef) []api.RuleRef {
+	if qc.discovery == nil {
+		return refs
+	}
+	annotatePhantomRefs(refs, qc.discovery, qc.addWarning)
+	if qc.spec.FilterPhantomAPIs {
+		refs = filterPhantomRefs(refs)
+	}
+	expandWildcardRefs(refs, qc.discovery, qc.addWarning)
+	annotateUnsupportedVerbs(refs, qc.discovery)
+
+	return refs
 }
 
 func filterPhantomRefs(refs []api.RuleRef) []api.RuleRef {
