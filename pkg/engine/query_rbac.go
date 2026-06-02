@@ -151,7 +151,7 @@ func (qc *queryContext) processMatches(refs []api.RuleRef) []api.RuleRef {
 	if qc.spec.FilterPhantomAPIs {
 		refs = filterPhantomRefs(refs)
 	}
-	expandWildcardRefs(refs, qc.discovery, qc.addWarning)
+	expandWildcardRefs(refs, qc.discovery, qc.truncation.emit)
 	annotateUnsupportedVerbs(refs, qc.discovery)
 
 	return refs

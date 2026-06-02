@@ -127,7 +127,6 @@ func subjectEnumOpenAPIDefinitions() map[string]common.OpenAPIDefinition {
 						string(SubjectWarningCodeImpersonationCapable),
 						string(SubjectWarningCodeBrokenBinding),
 						string(SubjectWarningCodeLargeResponse),
-						string(SubjectWarningCodeExpansionTruncated),
 					},
 				},
 			},
@@ -191,7 +190,6 @@ func injectEnumsIntoStructFields(defs map[string]common.OpenAPIDefinition) {
 		string(SubjectWarningCodeImpersonationCapable),
 		string(SubjectWarningCodeBrokenBinding),
 		string(SubjectWarningCodeLargeResponse),
-		string(SubjectWarningCodeExpansionTruncated),
 	})
 	patchField("GraphNode", "type", []any{
 		string(GraphNodeTypeRole), string(GraphNodeTypeClusterRole),

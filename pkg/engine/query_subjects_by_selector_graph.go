@@ -26,7 +26,7 @@ func (e *Engine) QuerySubjectsBySelectorGraph(
 		return status
 	}
 
-	warnings := newExpansionWarningSink()
+	trunc := newTruncationAccumulator()
 	g := newGraphBuilder()
 	for _, roleID := range candidates {
 		role, ok := snapshot.RolesByID[roleID]
@@ -39,7 +39,7 @@ func (e *Engine) QuerySubjectsBySelectorGraph(
 			if normalized.FilterPhantomAPIs {
 				matchedRefs = filterPhantomRefs(matchedRefs)
 			}
-			expandWildcardRefs(matchedRefs, discovery, warnings.emit)
+			expandWildcardRefs(matchedRefs, discovery, trunc.emit)
 			annotateUnsupportedVerbs(matchedRefs, discovery)
 		}
 		if len(matchedRefs) == 0 {
@@ -53,7 +53,7 @@ func (e *Engine) QuerySubjectsBySelectorGraph(
 	status.MatchedRoles = countNodesOfTypes(graph.Nodes, api.GraphNodeTypeRole, api.GraphNodeTypeClusterRole)
 	status.MatchedBindings = countNodesOfTypes(graph.Nodes, api.GraphNodeTypeRoleBinding, api.GraphNodeTypeClusterRoleBinding)
 	status.MatchedSubjects = countNodesOfTypes(graph.Nodes, api.GraphNodeTypeUser, api.GraphNodeTypeGroup, api.GraphNodeTypeServiceAccount)
-	status.Warnings = warnings.warnings
+	status.ExpansionTruncated = trunc.result()
 
 	return status
 }

@@ -13,6 +13,35 @@ import (
 // prevent runaway response sizes for roles like cluster-admin (*/*/*).
 const maxExpandedRefsPerParent = 2000
 
+// truncationAccumulator dedupes wildcard-expansion overflow messages.
+type truncationAccumulator struct {
+	messages []string
+	seen     map[string]struct{}
+}
+
+func newTruncationAccumulator() *truncationAccumulator {
+	return &truncationAccumulator{seen: make(map[string]struct{})}
+}
+
+func (t *truncationAccumulator) emit(msg string) {
+	if _, ok := t.seen[msg]; ok {
+		return
+	}
+	t.seen[msg] = struct{}{}
+	t.messages = append(t.messages, msg)
+}
+
+func (t *truncationAccumulator) result() *api.ExpansionTruncation {
+	if len(t.messages) == 0 {
+		return nil
+	}
+
+	return &api.ExpansionTruncation{
+		Limit:    maxExpandedRefsPerParent,
+		Messages: t.messages,
+	}
+}
+
 // annotatePhantomRefs marks RuleRefs that reference apiGroups, resources, or
 // subresources missing from cluster discovery. Refs without subresource fall
 // back to base-resource lookup for graceful degradation; refs with explicit

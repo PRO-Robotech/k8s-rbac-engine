@@ -1108,15 +1108,26 @@ func TestQuery_WildcardExpansion_Cap(t *testing.T) {
 		t.Fatalf("expected expansion capped at 2000, got %d", len(expandedRef.ExpandedRefs))
 	}
 
-	// Should have a truncation warning.
-	hasWarning := false
-	for _, w := range status.Warnings {
-		if strings.Contains(w, "truncated at 2000") {
-			hasWarning = true
+	// Truncation lands in the dedicated ExpansionTruncated field, not warnings.
+	if status.ExpansionTruncated == nil {
+		t.Fatalf("expected ExpansionTruncated to be set, got nil (warnings=%v)", status.Warnings)
+	}
+	if status.ExpansionTruncated.Limit != 2000 {
+		t.Errorf("expected limit 2000, got %d", status.ExpansionTruncated.Limit)
+	}
+	hasMessage := false
+	for _, m := range status.ExpansionTruncated.Messages {
+		if strings.Contains(m, "truncated at 2000") {
+			hasMessage = true
 		}
 	}
-	if !hasWarning {
-		t.Fatalf("expected truncation warning, got warnings=%v", status.Warnings)
+	if !hasMessage {
+		t.Fatalf("expected truncation message, got %v", status.ExpansionTruncated.Messages)
+	}
+	for _, w := range status.Warnings {
+		if strings.Contains(w, "truncated") {
+			t.Errorf("truncation message leaked into warnings: %q", w)
+		}
 	}
 }
 

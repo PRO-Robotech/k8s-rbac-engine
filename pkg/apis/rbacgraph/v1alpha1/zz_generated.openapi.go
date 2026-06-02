@@ -36,6 +36,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		Assessment{}.OpenAPIModelName():                    schema_pkg_apis_rbacgraph_v1alpha1_Assessment(ref),
 		AttributedGrant{}.OpenAPIModelName():               schema_pkg_apis_rbacgraph_v1alpha1_AttributedGrant(ref),
 		BindingRef{}.OpenAPIModelName():                    schema_pkg_apis_rbacgraph_v1alpha1_BindingRef(ref),
+		ExpansionTruncation{}.OpenAPIModelName():           schema_pkg_apis_rbacgraph_v1alpha1_ExpansionTruncation(ref),
 		GrantingRule{}.OpenAPIModelName():                  schema_pkg_apis_rbacgraph_v1alpha1_GrantingRule(ref),
 		Graph{}.OpenAPIModelName():                         schema_pkg_apis_rbacgraph_v1alpha1_Graph(ref),
 		GraphEdge{}.OpenAPIModelName():                     schema_pkg_apis_rbacgraph_v1alpha1_GraphEdge(ref),
@@ -340,6 +341,41 @@ func schema_pkg_apis_rbacgraph_v1alpha1_BindingRef(ref common.ReferenceCallback)
 					},
 				},
 				Required: []string{"kind", "name"},
+			},
+		},
+	}
+}
+
+func schema_pkg_apis_rbacgraph_v1alpha1_ExpansionTruncation(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "ExpansionTruncation reports wildcard-expansion overflow: expansion stopped at Limit, with one summary line per dropped wildcard rule in Messages.",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"limit": {
+						SchemaProps: spec.SchemaProps{
+							Default: 0,
+							Type:    []string{"integer"},
+							Format:  "int32",
+						},
+					},
+					"messages": {
+						SchemaProps: spec.SchemaProps{
+							Type: []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: "",
+										Type:    []string{"string"},
+										Format:  "",
+									},
+								},
+							},
+						},
+					},
+				},
+				Required: []string{"limit", "messages"},
 			},
 		},
 	}
@@ -1183,12 +1219,17 @@ func schema_pkg_apis_rbacgraph_v1alpha1_RoleGraphReviewStatus(ref common.Referen
 							},
 						},
 					},
+					"expansionTruncated": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref(ExpansionTruncation{}.OpenAPIModelName()),
+						},
+					},
 				},
 				Required: []string{"matchedRoles", "matchedBindings", "matchedSubjects", "graph", "resourceMap"},
 			},
 		},
 		Dependencies: []string{
-			Graph{}.OpenAPIModelName(), ResourceMapRow{}.OpenAPIModelName()},
+			ExpansionTruncation{}.OpenAPIModelName(), Graph{}.OpenAPIModelName(), ResourceMapRow{}.OpenAPIModelName()},
 	}
 }
 
@@ -1848,12 +1889,17 @@ func schema_pkg_apis_rbacgraph_v1alpha1_SubjectGraphReviewStatus(ref common.Refe
 							},
 						},
 					},
+					"expansionTruncated": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref(ExpansionTruncation{}.OpenAPIModelName()),
+						},
+					},
 				},
 				Required: []string{"subject", "matchedRoles", "matchedBindings", "graph"},
 			},
 		},
 		Dependencies: []string{
-			Graph{}.OpenAPIModelName(), SubjectRef{}.OpenAPIModelName(), SubjectWarning{}.OpenAPIModelName()},
+			ExpansionTruncation{}.OpenAPIModelName(), Graph{}.OpenAPIModelName(), SubjectRef{}.OpenAPIModelName(), SubjectWarning{}.OpenAPIModelName()},
 	}
 }
 
@@ -2055,12 +2101,17 @@ func schema_pkg_apis_rbacgraph_v1alpha1_SubjectPermissionsViewStatus(ref common.
 							},
 						},
 					},
+					"expansionTruncated": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref(ExpansionTruncation{}.OpenAPIModelName()),
+						},
+					},
 				},
 				Required: []string{"subject", "apiGroups", "grants", "bindings", "roles"},
 			},
 		},
 		Dependencies: []string{
-			APIGroupPermissions{}.OpenAPIModelName(), AttributedGrant{}.OpenAPIModelName(), NonResourceURLPermissions{}.OpenAPIModelName(), SubjectBinding{}.OpenAPIModelName(), SubjectRef{}.OpenAPIModelName(), SubjectRoleSummary{}.OpenAPIModelName(), SubjectWarning{}.OpenAPIModelName()},
+			APIGroupPermissions{}.OpenAPIModelName(), AttributedGrant{}.OpenAPIModelName(), ExpansionTruncation{}.OpenAPIModelName(), NonResourceURLPermissions{}.OpenAPIModelName(), SubjectBinding{}.OpenAPIModelName(), SubjectRef{}.OpenAPIModelName(), SubjectRoleSummary{}.OpenAPIModelName(), SubjectWarning{}.OpenAPIModelName()},
 	}
 }
 
@@ -2140,11 +2191,11 @@ func schema_pkg_apis_rbacgraph_v1alpha1_SubjectWarning(ref common.ReferenceCallb
 				Properties: map[string]spec.Schema{
 					"code": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Possible enum values:\n - `\"BrokenBinding\"`\n - `\"ExpansionTruncated\"`\n - `\"ImpersonationCapable\"`\n - `\"LargeResponse\"`",
+							Description: "Possible enum values:\n - `\"BrokenBinding\"`\n - `\"ImpersonationCapable\"`\n - `\"LargeResponse\"`",
 							Default:     "",
 							Type:        []string{"string"},
 							Format:      "",
-							Enum:        []interface{}{"BrokenBinding", "ExpansionTruncated", "ImpersonationCapable", "LargeResponse"},
+							Enum:        []interface{}{"BrokenBinding", "ImpersonationCapable", "LargeResponse"},
 						},
 					},
 					"message": {
@@ -2348,12 +2399,17 @@ func schema_pkg_apis_rbacgraph_v1alpha1_SubjectsBySelectorGraphStatus(ref common
 							},
 						},
 					},
+					"expansionTruncated": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref(ExpansionTruncation{}.OpenAPIModelName()),
+						},
+					},
 				},
 				Required: []string{"selector", "expandedImplicitGroups", "matchedRoles", "matchedBindings", "matchedSubjects", "graph"},
 			},
 		},
 		Dependencies: []string{
-			Graph{}.OpenAPIModelName(), Selector{}.OpenAPIModelName(), SubjectWarning{}.OpenAPIModelName()},
+			ExpansionTruncation{}.OpenAPIModelName(), Graph{}.OpenAPIModelName(), Selector{}.OpenAPIModelName(), SubjectWarning{}.OpenAPIModelName()},
 	}
 }
 
@@ -2499,12 +2555,17 @@ func schema_pkg_apis_rbacgraph_v1alpha1_SubjectsBySelectorViewStatus(ref common.
 							},
 						},
 					},
+					"expansionTruncated": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref(ExpansionTruncation{}.OpenAPIModelName()),
+						},
+					},
 				},
 				Required: []string{"selector", "expandedImplicitGroups", "subjects"},
 			},
 		},
 		Dependencies: []string{
-			ScopedSubject{}.OpenAPIModelName(), Selector{}.OpenAPIModelName(), SubjectWarning{}.OpenAPIModelName()},
+			ExpansionTruncation{}.OpenAPIModelName(), ScopedSubject{}.OpenAPIModelName(), Selector{}.OpenAPIModelName(), SubjectWarning{}.OpenAPIModelName()},
 	}
 }
 

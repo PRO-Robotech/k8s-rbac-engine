@@ -12,13 +12,14 @@ import (
 
 func (c *subjectQueryContext) toGraphStatus() api.SubjectGraphReviewStatus {
 	return api.SubjectGraphReviewStatus{
-		Subject:          c.subject,
-		ResolvedSubjects: cloneSubjectRefs(c.resolvedSubjects),
-		MatchedRoles:     countNonNilRoles(c.roleHits),
-		MatchedBindings:  countBindingAttrs(c.roleHits),
-		Graph:            c.buildGraph(),
-		Warnings:         cloneWarnings(c.warnings),
-		KnownGaps:        c.snapshot.CloneKnownGaps(),
+		Subject:            c.subject,
+		ResolvedSubjects:   cloneSubjectRefs(c.resolvedSubjects),
+		MatchedRoles:       countNonNilRoles(c.roleHits),
+		MatchedBindings:    countBindingAttrs(c.roleHits),
+		Graph:              c.buildGraph(),
+		Warnings:           cloneWarnings(c.warnings),
+		KnownGaps:          c.snapshot.CloneKnownGaps(),
+		ExpansionTruncated: c.truncation.result(),
 	}
 }
 

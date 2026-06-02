@@ -111,15 +111,23 @@ type Selector struct {
 }
 
 type RoleGraphReviewStatus struct {
-	MatchedRoles     int              `json:"matchedRoles"`
-	MatchedBindings  int              `json:"matchedBindings"`
-	MatchedSubjects  int              `json:"matchedSubjects"`
-	MatchedPods      int              `json:"matchedPods,omitempty"`
-	MatchedWorkloads int              `json:"matchedWorkloads,omitempty"`
-	Warnings         []string         `json:"warnings,omitempty"`
-	KnownGaps        []string         `json:"knownGaps,omitempty"`
-	Graph            Graph            `json:"graph"`
-	ResourceMap      []ResourceMapRow `json:"resourceMap"`
+	MatchedRoles       int                  `json:"matchedRoles"`
+	MatchedBindings    int                  `json:"matchedBindings"`
+	MatchedSubjects    int                  `json:"matchedSubjects"`
+	MatchedPods        int                  `json:"matchedPods,omitempty"`
+	MatchedWorkloads   int                  `json:"matchedWorkloads,omitempty"`
+	Warnings           []string             `json:"warnings,omitempty"`
+	KnownGaps          []string             `json:"knownGaps,omitempty"`
+	Graph              Graph                `json:"graph"`
+	ResourceMap        []ResourceMapRow     `json:"resourceMap"`
+	ExpansionTruncated *ExpansionTruncation `json:"expansionTruncated,omitempty"`
+}
+
+// ExpansionTruncation reports wildcard-expansion overflow: expansion stopped at
+// Limit, with one summary line per dropped wildcard rule in Messages.
+type ExpansionTruncation struct {
+	Limit    int      `json:"limit"`
+	Messages []string `json:"messages"`
 }
 
 type Graph struct {
@@ -406,6 +414,9 @@ func (GraphEdge) OpenAPIModelName() string      { return openAPIPrefix + "GraphE
 func (Assessment) OpenAPIModelName() string     { return openAPIPrefix + "Assessment" }
 func (RuleRef) OpenAPIModelName() string        { return openAPIPrefix + "RuleRef" }
 func (ResourceMapRow) OpenAPIModelName() string { return openAPIPrefix + "ResourceMapRow" }
+func (ExpansionTruncation) OpenAPIModelName() string {
+	return openAPIPrefix + "ExpansionTruncation"
+}
 
 // ---------- SubjectPermissionsView / SubjectGraphReview types ----------
 // SYNC: Keep types/constants/methods in sync with pkg/apis/rbacgraph/types.go
@@ -449,7 +460,6 @@ const (
 	SubjectWarningCodeImpersonationCapable SubjectWarningCode = "ImpersonationCapable"
 	SubjectWarningCodeBrokenBinding        SubjectWarningCode = "BrokenBinding"
 	SubjectWarningCodeLargeResponse        SubjectWarningCode = "LargeResponse"
-	SubjectWarningCodeExpansionTruncated   SubjectWarningCode = "ExpansionTruncated"
 )
 
 // SubjectRef identifies an RBAC subject. Namespace is populated only for ServiceAccount.
@@ -488,14 +498,15 @@ type SubjectPermissionsViewSpec struct {
 }
 
 type SubjectPermissionsViewStatus struct {
-	Subject          SubjectRef                 `json:"subject"`
-	ResolvedSubjects []SubjectRef               `json:"resolvedSubjects,omitempty"`
-	APIGroups        []APIGroupPermissions      `json:"apiGroups"`
-	NonResourceURLs  *NonResourceURLPermissions `json:"nonResourceUrls,omitempty"`
-	Grants           []AttributedGrant          `json:"grants"`
-	Bindings         []SubjectBinding           `json:"bindings"`
-	Roles            []SubjectRoleSummary       `json:"roles"`
-	Warnings         []SubjectWarning           `json:"warnings,omitempty"`
+	Subject            SubjectRef                 `json:"subject"`
+	ResolvedSubjects   []SubjectRef               `json:"resolvedSubjects,omitempty"`
+	APIGroups          []APIGroupPermissions      `json:"apiGroups"`
+	NonResourceURLs    *NonResourceURLPermissions `json:"nonResourceUrls,omitempty"`
+	Grants             []AttributedGrant          `json:"grants"`
+	Bindings           []SubjectBinding           `json:"bindings"`
+	Roles              []SubjectRoleSummary       `json:"roles"`
+	Warnings           []SubjectWarning           `json:"warnings,omitempty"`
+	ExpansionTruncated *ExpansionTruncation       `json:"expansionTruncated,omitempty"`
 }
 
 type SubjectBinding struct {
@@ -559,13 +570,14 @@ type SubjectGraphReviewSpec struct {
 }
 
 type SubjectGraphReviewStatus struct {
-	Subject          SubjectRef       `json:"subject"`
-	ResolvedSubjects []SubjectRef     `json:"resolvedSubjects,omitempty"`
-	MatchedRoles     int              `json:"matchedRoles"`
-	MatchedBindings  int              `json:"matchedBindings"`
-	Graph            Graph            `json:"graph"`
-	Warnings         []SubjectWarning `json:"warnings,omitempty"`
-	KnownGaps        []string         `json:"knownGaps,omitempty"`
+	Subject            SubjectRef           `json:"subject"`
+	ResolvedSubjects   []SubjectRef         `json:"resolvedSubjects,omitempty"`
+	MatchedRoles       int                  `json:"matchedRoles"`
+	MatchedBindings    int                  `json:"matchedBindings"`
+	Graph              Graph                `json:"graph"`
+	Warnings           []SubjectWarning     `json:"warnings,omitempty"`
+	KnownGaps          []string             `json:"knownGaps,omitempty"`
+	ExpansionTruncated *ExpansionTruncation `json:"expansionTruncated,omitempty"`
 }
 
 // ---------- subject spec methods ----------
@@ -696,10 +708,11 @@ type SubjectsBySelectorViewSpec struct {
 }
 
 type SubjectsBySelectorViewStatus struct {
-	Selector               Selector         `json:"selector"`
-	ExpandedImplicitGroups bool             `json:"expandedImplicitGroups"`
-	Subjects               []ScopedSubject  `json:"subjects"`
-	Warnings               []SubjectWarning `json:"warnings,omitempty"`
+	Selector               Selector             `json:"selector"`
+	ExpandedImplicitGroups bool                 `json:"expandedImplicitGroups"`
+	Subjects               []ScopedSubject      `json:"subjects"`
+	Warnings               []SubjectWarning     `json:"warnings,omitempty"`
+	ExpansionTruncated     *ExpansionTruncation `json:"expansionTruncated,omitempty"`
 }
 
 type ScopedSubject struct {
@@ -777,13 +790,14 @@ type SubjectsBySelectorGraphSpec struct {
 }
 
 type SubjectsBySelectorGraphStatus struct {
-	Selector               Selector         `json:"selector"`
-	ExpandedImplicitGroups bool             `json:"expandedImplicitGroups"`
-	MatchedRoles           int              `json:"matchedRoles"`
-	MatchedBindings        int              `json:"matchedBindings"`
-	MatchedSubjects        int              `json:"matchedSubjects"`
-	Graph                  Graph            `json:"graph"`
-	Warnings               []SubjectWarning `json:"warnings,omitempty"`
+	Selector               Selector             `json:"selector"`
+	ExpandedImplicitGroups bool                 `json:"expandedImplicitGroups"`
+	MatchedRoles           int                  `json:"matchedRoles"`
+	MatchedBindings        int                  `json:"matchedBindings"`
+	MatchedSubjects        int                  `json:"matchedSubjects"`
+	Graph                  Graph                `json:"graph"`
+	Warnings               []SubjectWarning     `json:"warnings,omitempty"`
+	ExpansionTruncated     *ExpansionTruncation `json:"expansionTruncated,omitempty"`
 }
 
 func (r *SubjectsBySelectorGraph) EnsureDefaults() {

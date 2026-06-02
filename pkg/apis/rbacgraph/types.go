@@ -101,15 +101,23 @@ type Selector struct {
 }
 
 type RoleGraphReviewStatus struct {
-	MatchedRoles     int
-	MatchedBindings  int
-	MatchedSubjects  int
-	MatchedPods      int
-	MatchedWorkloads int
-	Warnings         []string
-	KnownGaps        []string
-	Graph            Graph
-	ResourceMap      []ResourceMapRow
+	MatchedRoles       int
+	MatchedBindings    int
+	MatchedSubjects    int
+	MatchedPods        int
+	MatchedWorkloads   int
+	Warnings           []string
+	KnownGaps          []string
+	Graph              Graph
+	ResourceMap        []ResourceMapRow
+	ExpansionTruncated *ExpansionTruncation
+}
+
+// ExpansionTruncation reports wildcard-expansion overflow: expansion stopped at
+// Limit, with one summary line per dropped wildcard rule in Messages.
+type ExpansionTruncation struct {
+	Limit    int
+	Messages []string
 }
 
 type Graph struct {
@@ -370,7 +378,6 @@ const (
 	SubjectWarningCodeImpersonationCapable SubjectWarningCode = "ImpersonationCapable"
 	SubjectWarningCodeBrokenBinding        SubjectWarningCode = "BrokenBinding"
 	SubjectWarningCodeLargeResponse        SubjectWarningCode = "LargeResponse"
-	SubjectWarningCodeExpansionTruncated   SubjectWarningCode = "ExpansionTruncated"
 )
 
 // SubjectRef identifies an RBAC subject. Namespace is populated only for ServiceAccount.
@@ -409,14 +416,15 @@ type SubjectPermissionsViewSpec struct {
 }
 
 type SubjectPermissionsViewStatus struct {
-	Subject          SubjectRef
-	ResolvedSubjects []SubjectRef
-	APIGroups        []APIGroupPermissions
-	NonResourceURLs  *NonResourceURLPermissions
-	Grants           []AttributedGrant
-	Bindings         []SubjectBinding
-	Roles            []SubjectRoleSummary
-	Warnings         []SubjectWarning
+	Subject            SubjectRef
+	ResolvedSubjects   []SubjectRef
+	APIGroups          []APIGroupPermissions
+	NonResourceURLs    *NonResourceURLPermissions
+	Grants             []AttributedGrant
+	Bindings           []SubjectBinding
+	Roles              []SubjectRoleSummary
+	Warnings           []SubjectWarning
+	ExpansionTruncated *ExpansionTruncation
 }
 
 type SubjectBinding struct {
@@ -480,13 +488,14 @@ type SubjectGraphReviewSpec struct {
 }
 
 type SubjectGraphReviewStatus struct {
-	Subject          SubjectRef
-	ResolvedSubjects []SubjectRef
-	MatchedRoles     int
-	MatchedBindings  int
-	Graph            Graph
-	Warnings         []SubjectWarning
-	KnownGaps        []string
+	Subject            SubjectRef
+	ResolvedSubjects   []SubjectRef
+	MatchedRoles       int
+	MatchedBindings    int
+	Graph              Graph
+	Warnings           []SubjectWarning
+	KnownGaps          []string
+	ExpansionTruncated *ExpansionTruncation
 }
 
 // ---------- subject spec methods ----------
@@ -571,6 +580,7 @@ type SubjectsBySelectorViewStatus struct {
 	ExpandedImplicitGroups bool
 	Subjects               []ScopedSubject
 	Warnings               []SubjectWarning
+	ExpansionTruncated     *ExpansionTruncation
 }
 
 // ScopedSubject is one subject from a selector match with attributed grants.
@@ -630,6 +640,7 @@ type SubjectsBySelectorGraphStatus struct {
 	MatchedSubjects        int
 	Graph                  Graph
 	Warnings               []SubjectWarning
+	ExpansionTruncated     *ExpansionTruncation
 }
 
 func (s *SubjectsBySelectorGraphSpec) EnsureDefaults() {

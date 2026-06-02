@@ -9,14 +9,15 @@ import (
 
 func (c *subjectQueryContext) toPermissionsStatus() api.SubjectPermissionsViewStatus {
 	return api.SubjectPermissionsViewStatus{
-		Subject:          c.subject,
-		ResolvedSubjects: cloneSubjectRefs(c.resolvedSubjects),
-		APIGroups:        c.buildAPIGroupsAggregated(),
-		NonResourceURLs:  c.buildNonResourceURLsAggregated(),
-		Grants:           c.buildAttributedGrants(),
-		Bindings:         c.buildSubjectBindings(),
-		Roles:            c.buildRoleSummaries(),
-		Warnings:         cloneWarnings(c.warnings),
+		Subject:            c.subject,
+		ResolvedSubjects:   cloneSubjectRefs(c.resolvedSubjects),
+		APIGroups:          c.buildAPIGroupsAggregated(),
+		NonResourceURLs:    c.buildNonResourceURLsAggregated(),
+		Grants:             c.buildAttributedGrants(),
+		Bindings:           c.buildSubjectBindings(),
+		Roles:              c.buildRoleSummaries(),
+		Warnings:           cloneWarnings(c.warnings),
+		ExpansionTruncated: c.truncation.result(),
 	}
 }
 
@@ -25,11 +26,9 @@ type resourceKey struct {
 	resource string
 }
 
-// buildAPIGroupsAggregated produces the forward-compatible permission tree
-// — apiGroup → resource → verb → granted. Rules[] is intentionally empty
-// in the reverse projection: full provenance lives in Status.Grants.
-// Wildcard refs are walked through ExpandedRefs so the tree shows concrete
-// resources/verbs, matching the grants[] projection.
+// buildAPIGroupsAggregated builds the apiGroup→resource→verb tree. Rules[] is
+// left empty (provenance lives in Grants), and ExpandedRefs are walked so the
+// tree shows concrete tuples, not "*".
 func (c *subjectQueryContext) buildAPIGroupsAggregated() []api.APIGroupPermissions {
 	granted := make(map[resourceKey]map[string]struct{})
 	addRef := func(ref *api.RuleRef) {

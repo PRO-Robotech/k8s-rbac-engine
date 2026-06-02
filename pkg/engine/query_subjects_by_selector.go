@@ -31,7 +31,7 @@ func (e *Engine) QuerySubjectsBySelector(
 		return status
 	}
 
-	warnings := newExpansionWarningSink()
+	trunc := newTruncationAccumulator()
 	agg := newScopedSubjectAggregator(e.ReportLookup)
 	for _, roleID := range candidates {
 		role, ok := snapshot.RolesByID[roleID]
@@ -44,7 +44,7 @@ func (e *Engine) QuerySubjectsBySelector(
 			if normalized.FilterPhantomAPIs {
 				matchedRefs = filterPhantomRefs(matchedRefs)
 			}
-			expandWildcardRefs(matchedRefs, discovery, warnings.emit)
+			expandWildcardRefs(matchedRefs, discovery, trunc.emit)
 			annotateUnsupportedVerbs(matchedRefs, discovery)
 		}
 		if len(matchedRefs) == 0 {
@@ -54,29 +54,9 @@ func (e *Engine) QuerySubjectsBySelector(
 	}
 
 	status.Subjects = agg.finalize()
-	status.Warnings = warnings.warnings
+	status.ExpansionTruncated = trunc.result()
 
 	return status
-}
-
-type expansionWarningSink struct {
-	warnings []api.SubjectWarning
-	seen     map[string]struct{}
-}
-
-func newExpansionWarningSink() *expansionWarningSink {
-	return &expansionWarningSink{seen: make(map[string]struct{})}
-}
-
-func (s *expansionWarningSink) emit(msg string) {
-	if _, ok := s.seen[msg]; ok {
-		return
-	}
-	s.seen[msg] = struct{}{}
-	s.warnings = append(s.warnings, api.SubjectWarning{
-		Code:    api.SubjectWarningCodeExpansionTruncated,
-		Message: msg,
-	})
 }
 
 // collectSubjectsForRole records grants for each subject of every binding that references the role.

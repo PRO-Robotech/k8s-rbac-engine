@@ -596,6 +596,28 @@
         }
       }
     },
+    "k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.ExpansionTruncation": {
+      "description": "ExpansionTruncation reports wildcard-expansion overflow: expansion stopped at Limit, with one summary line per dropped wildcard rule in Messages.",
+      "type": "object",
+      "required": [
+        "limit",
+        "messages"
+      ],
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "format": "int32",
+          "default": 0
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "default": ""
+          }
+        }
+      }
+    },
     "k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.GrantingRule": {
       "type": "object",
       "required": [
@@ -1062,6 +1084,9 @@
         "resourceMap"
       ],
       "properties": {
+        "expansionTruncated": {
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.ExpansionTruncation"
+        },
         "graph": {
           "default": {},
           "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.Graph"
@@ -1479,6 +1504,9 @@
         "graph"
       ],
       "properties": {
+        "expansionTruncated": {
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.ExpansionTruncation"
+        },
         "graph": {
           "default": {},
           "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.Graph"
@@ -1611,6 +1639,9 @@
             "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.SubjectBinding"
           }
         },
+        "expansionTruncated": {
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.ExpansionTruncation"
+        },
         "grants": {
           "type": "array",
           "items": {
@@ -1704,12 +1735,11 @@
           "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.BindingRef"
         },
         "code": {
-          "description": "Possible enum values:\n - `\"BrokenBinding\"`\n - `\"ExpansionTruncated\"`\n - `\"ImpersonationCapable\"`\n - `\"LargeResponse\"`",
+          "description": "Possible enum values:\n - `\"BrokenBinding\"`\n - `\"ImpersonationCapable\"`\n - `\"LargeResponse\"`",
           "type": "string",
           "default": "",
           "enum": [
             "BrokenBinding",
-            "ExpansionTruncated",
             "ImpersonationCapable",
             "LargeResponse"
           ]
@@ -1811,6 +1841,9 @@
         "expandedImplicitGroups": {
           "type": "boolean",
           "default": false
+        },
+        "expansionTruncated": {
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.ExpansionTruncation"
         },
         "graph": {
           "default": {},
@@ -1918,6 +1951,9 @@
         "expandedImplicitGroups": {
           "type": "boolean",
           "default": false
+        },
+        "expansionTruncated": {
+          "$ref": "#/definitions/k8s-rbac-engine.pkg.apis.rbacgraph.v1alpha1.ExpansionTruncation"
         },
         "selector": {
           "default": {},

@@ -39,6 +39,7 @@ type subjectQueryContext struct {
 	roleHitByID map[indexer.RoleID]*roleHit
 	warnings    []api.SubjectWarning
 	warningSeen map[string]struct{}
+	truncation  *truncationAccumulator
 }
 
 // roleHit captures one role reached from the subject (possibly via multiple
@@ -125,6 +126,7 @@ func newSubjectQueryContext(
 		filterPhantom: filterPhantom,
 		roleHitByID:   make(map[indexer.RoleID]*roleHit),
 		warningSeen:   make(map[string]struct{}),
+		truncation:    newTruncationAccumulator(),
 	}
 }
 
@@ -248,7 +250,7 @@ func (c *subjectQueryContext) matchRoleRules(role *indexer.RoleRecord) []api.Rul
 		if c.filterPhantom {
 			refs = filterPhantomRefs(refs)
 		}
-		expandWildcardRefs(refs, c.discovery, c.emitExpansionTruncated)
+		expandWildcardRefs(refs, c.discovery, c.truncation.emit)
 		annotateUnsupportedVerbs(refs, c.discovery)
 	}
 
@@ -256,13 +258,6 @@ func (c *subjectQueryContext) matchRoleRules(role *indexer.RoleRecord) []api.Rul
 }
 
 func dropWarning(_ string) {}
-
-func (c *subjectQueryContext) emitExpansionTruncated(msg string) {
-	c.addWarning(api.SubjectWarning{
-		Code:    api.SubjectWarningCodeExpansionTruncated,
-		Message: msg,
-	})
-}
 
 // --- Warnings ---
 
