@@ -14,6 +14,10 @@ import (
 	nonresourceurlstorage "k8s-rbac-engine/internal/registry/nonresourceurl"
 	reviewstorage "k8s-rbac-engine/internal/registry/rolegraphreview"
 	permviewstorage "k8s-rbac-engine/internal/registry/rolepermissionsview"
+	subjectgraphstorage "k8s-rbac-engine/internal/registry/subjectgraphreview"
+	subjectpermstorage "k8s-rbac-engine/internal/registry/subjectpermissionsview"
+	subjectsbyselgraphstorage "k8s-rbac-engine/internal/registry/subjectsbyselectorgraph"
+	subjectsbyselstorage "k8s-rbac-engine/internal/registry/subjectsbyselectorview"
 	"k8s-rbac-engine/pkg/apis/rbacgraph"
 	"k8s-rbac-engine/pkg/apis/rbacgraph/v1alpha1"
 	"k8s-rbac-engine/pkg/engine"
@@ -73,6 +77,10 @@ func (c CompletedConfig) New() (*RbacGraphServer, error) {
 	v1alpha1storage["rolegraphreviews"] = reviewstorage.NewREST(c.Engine, c.Indexer, Scheme, c.AuthzResolver)
 	v1alpha1storage["nonresourceurls"] = nonresourceurlstorage.NewREST(c.Indexer)
 	v1alpha1storage["rolepermissionsviews"] = permviewstorage.NewREST(c.Indexer, c.ReportLookup)
+	v1alpha1storage["subjectpermissionsviews"] = subjectpermstorage.NewREST(c.Engine, c.Indexer, c.AuthzResolver)
+	v1alpha1storage["subjectgraphreviews"] = subjectgraphstorage.NewREST(c.Engine, c.Indexer, c.AuthzResolver)
+	v1alpha1storage["subjectsbyselectorviews"] = subjectsbyselstorage.NewREST(c.Engine, c.Indexer, c.AuthzResolver)
+	v1alpha1storage["subjectsbyselectorgraphs"] = subjectsbyselgraphstorage.NewREST(c.Engine, c.Indexer, c.AuthzResolver)
 	apiGroupInfo.VersionedResourcesStorageMap[v1alpha1.Version] = v1alpha1storage
 
 	if err := s.GenericAPIServer.InstallAPIGroup(&apiGroupInfo); err != nil {

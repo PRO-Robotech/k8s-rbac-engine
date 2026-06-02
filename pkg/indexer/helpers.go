@@ -4,6 +4,8 @@ import (
 	"maps"
 	"slices"
 	"strings"
+
+	rbacv1 "k8s.io/api/rbac/v1"
 )
 
 func RecID(kind, namespace, name string) RoleID {
@@ -34,6 +36,17 @@ func cloneSlice[T any](in []T) []T {
 
 func serviceAccountKey(namespace, name string) ServiceAccountKey {
 	return ServiceAccountKey{Namespace: namespace, Name: name}
+}
+
+// subjectKey builds a SubjectKey, defaulting bare ServiceAccount subjects to
+// the binding's namespace — matching kube-apiserver's authorization-time resolution.
+func subjectKey(subject rbacv1.Subject, bindingNamespace string) SubjectKey {
+	ns := subject.Namespace
+	if subject.Kind == SubjectKindServiceAccount && ns == "" {
+		ns = bindingNamespace
+	}
+
+	return SubjectKey{Kind: subject.Kind, Namespace: ns, Name: subject.Name}
 }
 
 func normalizeServiceAccountName(name string) string {

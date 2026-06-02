@@ -20,6 +20,7 @@ func Scoped(s *Snapshot, scope Scope) *Snapshot {
 		BuiltAt:               s.BuiltAt,
 		RolesByID:             make(map[RoleID]*RoleRecord, len(s.RolesByID)),
 		BindingsByRoleRef:     make(map[RoleRefKey][]*BindingRecord, len(s.BindingsByRoleRef)),
+		BindingsBySubject:     make(map[SubjectKey][]*BindingRecord, len(s.BindingsBySubject)),
 		AggregatedRoleSources: make(map[RoleID][]RoleID, len(s.AggregatedRoleSources)),
 		PodsByServiceAccount:  make(map[ServiceAccountKey][]*PodRecord, len(s.PodsByServiceAccount)),
 		ServiceAccounts:       s.ServiceAccounts,
@@ -49,6 +50,18 @@ func Scoped(s *Snapshot, scope Scope) *Snapshot {
 		}
 		if len(kept) > 0 {
 			out.BindingsByRoleRef[key] = kept
+		}
+	}
+
+	for key, bindings := range s.BindingsBySubject {
+		var kept []*BindingRecord
+		for _, b := range bindings {
+			if scope.AllowBinding(b.Namespace) {
+				kept = append(kept, b)
+			}
+		}
+		if len(kept) > 0 {
+			out.BindingsBySubject[key] = kept
 		}
 	}
 

@@ -1,6 +1,8 @@
 package v1alpha1
 
 import (
+	"maps"
+
 	"k8s.io/kube-openapi/pkg/common"
 	"k8s.io/kube-openapi/pkg/validation/spec"
 )
@@ -8,6 +10,13 @@ import (
 // GetEnumOpenAPIDefinitions returns OpenAPI definitions with enum constraints
 // for custom string types that openapi-gen does not handle automatically.
 func GetEnumOpenAPIDefinitions(_ common.ReferenceCallback) map[string]common.OpenAPIDefinition {
+	defs := graphEnumOpenAPIDefinitions()
+	maps.Copy(defs, subjectEnumOpenAPIDefinitions())
+
+	return defs
+}
+
+func graphEnumOpenAPIDefinitions() map[string]common.OpenAPIDefinition {
 	prefix := openAPIPrefix
 
 	return map[string]common.OpenAPIDefinition{
@@ -68,6 +77,63 @@ func GetEnumOpenAPIDefinitions(_ common.ReferenceCallback) map[string]common.Ope
 	}
 }
 
+func subjectEnumOpenAPIDefinitions() map[string]common.OpenAPIDefinition {
+	prefix := openAPIPrefix
+
+	return map[string]common.OpenAPIDefinition{
+		prefix + "SubjectKind": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Description: "RBAC subject kind: 'ServiceAccount', 'User', or 'Group'.",
+					Type:        []string{"string"},
+					Enum: []any{
+						string(SubjectKindServiceAccount),
+						string(SubjectKindUser),
+						string(SubjectKindGroup),
+					},
+				},
+			},
+		},
+		prefix + "BindingKind": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Description: "RBAC binding kind: 'RoleBinding' or 'ClusterRoleBinding'.",
+					Type:        []string{"string"},
+					Enum: []any{
+						string(BindingKindRoleBinding),
+						string(BindingKindClusterRoleBinding),
+					},
+				},
+			},
+		},
+		prefix + "EffectiveScope": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Description: "Effective scope at which a binding grants permissions: 'cluster' (cluster-wide) or 'namespaced' (restricted to the binding's namespace, including RoleBinding→ClusterRole cases).",
+					Type:        []string{"string"},
+					Enum: []any{
+						string(EffectiveScopeCluster),
+						string(EffectiveScopeNamespaced),
+					},
+				},
+			},
+		},
+		prefix + "SubjectWarningCode": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Description: "Warning code raised by reverse-graph queries.",
+					Type:        []string{"string"},
+					Enum: []any{
+						string(SubjectWarningCodeImpersonationCapable),
+						string(SubjectWarningCodeBrokenBinding),
+						string(SubjectWarningCodeLargeResponse),
+					},
+				},
+			},
+		},
+	}
+}
+
 // GetOpenAPIDefinitionsWithEnums returns the generated OpenAPI definitions
 // merged with enum constraints for custom string types.
 func GetOpenAPIDefinitionsWithEnums(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
@@ -106,6 +172,25 @@ func injectEnumsIntoStructFields(defs map[string]common.OpenAPIDefinition) {
 	patchField("RoleGraphReviewSpec", "wildcardMode", []any{string(WildcardModeWildcard), string(WildcardModeExact)})
 	patchField("RolePermissionsViewSpec", "matchMode", []any{string(MatchModeAny), string(MatchModeAll)})
 	patchField("RolePermissionsViewSpec", "wildcardMode", []any{string(WildcardModeWildcard), string(WildcardModeExact)})
+	patchField("SubjectPermissionsViewSpec", "matchMode", []any{string(MatchModeAny), string(MatchModeAll)})
+	patchField("SubjectPermissionsViewSpec", "wildcardMode", []any{string(WildcardModeWildcard), string(WildcardModeExact)})
+	patchField("SubjectGraphReviewSpec", "matchMode", []any{string(MatchModeAny), string(MatchModeAll)})
+	patchField("SubjectGraphReviewSpec", "wildcardMode", []any{string(WildcardModeWildcard), string(WildcardModeExact)})
+	patchField("SubjectsBySelectorViewSpec", "matchMode", []any{string(MatchModeAny), string(MatchModeAll)})
+	patchField("SubjectsBySelectorViewSpec", "wildcardMode", []any{string(WildcardModeWildcard), string(WildcardModeExact)})
+	patchField("SubjectsBySelectorGraphSpec", "matchMode", []any{string(MatchModeAny), string(MatchModeAll)})
+	patchField("SubjectsBySelectorGraphSpec", "wildcardMode", []any{string(WildcardModeWildcard), string(WildcardModeExact)})
+	subjectKinds := []any{string(SubjectKindServiceAccount), string(SubjectKindUser), string(SubjectKindGroup)}
+	patchField("SubjectRef", "kind", subjectKinds)
+	bindingKinds := []any{string(BindingKindRoleBinding), string(BindingKindClusterRoleBinding)}
+	patchField("BindingRef", "kind", bindingKinds)
+	patchField("SubjectBinding", "kind", bindingKinds)
+	patchField("SubjectBinding", "effectiveScope", []any{string(EffectiveScopeCluster), string(EffectiveScopeNamespaced)})
+	patchField("SubjectWarning", "code", []any{
+		string(SubjectWarningCodeImpersonationCapable),
+		string(SubjectWarningCodeBrokenBinding),
+		string(SubjectWarningCodeLargeResponse),
+	})
 	patchField("GraphNode", "type", []any{
 		string(GraphNodeTypeRole), string(GraphNodeTypeClusterRole),
 		string(GraphNodeTypeRoleBinding), string(GraphNodeTypeClusterRoleBinding),

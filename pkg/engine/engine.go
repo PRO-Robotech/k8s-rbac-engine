@@ -43,6 +43,7 @@ type queryContext struct {
 	knownGapSeen    map[string]struct{}
 	podSeen         map[string]struct{}
 	workloadSeen    map[string]struct{}
+	truncation      *truncationAccumulator
 }
 
 func newQueryContext(snapshot *indexer.Snapshot, spec api.RoleGraphReviewSpec) *queryContext {
@@ -97,6 +98,7 @@ func newQueryContext(snapshot *indexer.Snapshot, spec api.RoleGraphReviewSpec) *
 		knownGapSeen:    knownGapSeen,
 		podSeen:         make(map[string]struct{}),
 		workloadSeen:    make(map[string]struct{}),
+		truncation:      newTruncationAccumulator(),
 	}
 }
 
@@ -107,6 +109,7 @@ func (qc *queryContext) finalize() api.RoleGraphReviewStatus {
 	qc.status.MatchedPods = len(qc.podSeen)
 	qc.status.MatchedWorkloads = len(qc.workloadSeen)
 	qc.status.ResourceMap = collapseResourceRows(qc.resourceRows)
+	qc.status.ExpansionTruncated = qc.truncation.result()
 	sortNodes(qc.status.Graph.Nodes)
 	sortEdges(qc.status.Graph.Edges)
 
